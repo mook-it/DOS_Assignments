@@ -8,9 +8,10 @@
 # Project Directory Structure
 
 - Main directory contains Project Problem statement pdf and directory named code which contains the elixir mix project
-- In lib we have three files [proj1.exs], [worker.ex] and [multi_machine.exs] which are used in this project to solve the problem
+- In lib we have two files [proj1.exs] and [multi_machine.exs] which are used in this project to solve the problem
 - [proj1.exs] contains the main code 
-- [multi_machine.exs] and [worker.ex] which contain the code for running the system on two machines
+- [multi_machine.exs] which contain the code for running the system on two machines
+- [worker.ex] in code(directory name) is helper module for multi machine processes.
 
 # Instructions for running the code
 
@@ -20,6 +21,10 @@ $ cd code
 $ mix run lib/proj1.exs 3 2
 ```
 Where 3 is the number N which is range in which the first number of solution set should lie. And 2 is the value of K that is maximum size of the solution set
+
+We are running for num_process increasing from 1 to 20 in each iteration. Hence each iteration prints the number of workers and time taken in that iteration
+
+Result format: the result of the project will be solution set of the problem in first line followed by time taken in each iteration
 
 #  Questions to be answered
 1. Size of the work unit that you determined results in best performance for your implementation and an explanation on how you determined it. Size of the work unit refers to the number of sub-problems that a worker gets in a single request from the boss.
