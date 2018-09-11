@@ -20,8 +20,12 @@ After unziping the file
 $ cd code
 $ mix run lib/proj1.exs 3 2
 ```
-Where 3 is the number N which is range in which the first number of solution set should lie. And 2 is the value of K that is maximum size of the solution set
+Input Format:
+Command line arguments: mix run lib/proj1.exs <arg1> <arg2>
 
+Where <arg1> is the number N which is range in which the first number of solution set should lie. And <arg2> is the value of K that is maximum size of the solution set.
+
+Output Format:
 We are running for num_process increasing from 1 to 20 in each iteration. Hence each iteration prints the number of workers and time taken in that iteration
 
 Result format: the result of the project will be solution set of the problem in first line followed by time taken in each iteration
