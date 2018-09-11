@@ -20,15 +20,17 @@ After unziping the file
 $ cd code
 $ mix run lib/proj1.exs 3 2
 ```
-Input Format:
+Input Format
+
 Command line arguments: mix run lib/proj1.exs arg1 arg2
 
 Where arg1 is the number N which is range in which the first number of solution set should lie. And arg2 is the value of K that is maximum size of the solution set.
 
-Output Format:
+Output Format
+
 We are running for num_process increasing from 1 to 20 in each iteration. Hence each iteration prints the number of workers and time taken in that iteration
 
-Result format: the result of the project will be solution set of the problem in first line followed by time taken in each iteration
+The result of the project will be solution set of the problem in first line followed by time taken in each iteration
 
 #  Questions to be answered
 1. Size of the work unit that you determined results in best performance for your implementation and an explanation on how you determined it. Size of the work unit refers to the number of sub-problems that a worker gets in a single request from the boss.
