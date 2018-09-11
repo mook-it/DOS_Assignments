@@ -1,9 +1,32 @@
 defmodule Scheduler do
   def run(n, module, func, args, k) do
+
+    #IO.puts(Node.connect(:"aswin@Aswins-MacBook-Pro"))
+
+    if (ConnectNode.connect() == true) do
+      run_multiple_node(n, module, func, args, k)
+    else
+      run_single_node(n, module, func, args, k)
+    end
+  end
+
+  defp run_single_node(n, module, func, args, k) do
     1..n
     |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
     |> schedule_processes(args, k, [])
+
   end
+
+  defp run_multiple_node(n, module, func, args, k) do
+    1..round(Float.ceil(n/2))
+    |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
+    |> schedule_processes(args, k, [])
+
+    round(Float.ceil(n/2))+1..n
+    |> Enum.map(fn _ -> Node.spawn(:"aswin@Aswins-MacBook-Pro",module, func, [self()]) end)
+    |> schedule_processes(args, k, [])
+  end
+
 
   defp schedule_processes(processes, args, k, results) do
     receive do
@@ -31,6 +54,14 @@ defmodule Scheduler do
   end
 end
 
+defmodule ConnectNode do
+  def connect do
+    Node.connect(:"aswin@Aswins-MacBook-Pro")
+  end
+
+
+end
+
 defmodule Worker do
   def work(scheduler) do
     send(scheduler, {:ready, self()})
@@ -41,6 +72,9 @@ defmodule Worker do
         m = :math.sqrt(sum)
         comp = m - :math.floor(m)
         send(client, {:answer, i, comp, self()})
+
+
+        #IO.puts(Node.self())
 
         work(scheduler)
 
@@ -63,23 +97,16 @@ end
 
 args = System.argv()
 # IO.puts String.to_integer(Enum.at(args, 1))
-  n = String.to_integer(Enum.at(args, 0))     #1_000_000
-  to_calculate = Enum.map(1..n, fn x -> x end)
-  k = String.to_integer(Enum.at(args, 1))     #4
+n = String.to_integer(Enum.at(args, 0))     #1_000_000
+to_calculate = Enum.map(1..n, fn x -> x end)
+k = String.to_integer(Enum.at(args, 1))     #4
 
-  Enum.each(1..1, fn num_processes ->
-    num_processes = 100
-    {time, result} =
-      :timer.tc(
-        Scheduler,
-        :run,
-        [num_processes , Worker, :work, to_calculate, k]
-      )
+  {time, result} =
+    :timer.tc(
+      Scheduler,
+      :run,
+      [100 , Worker, :work, to_calculate, k])
 
-    if num_processes == 1 do
-      IO.puts(inspect(result))
-      IO.puts("\n #   time (s)")
-    end
+IO.inspect(result)
 
-    :io.format("~6B     ~.6f~n", [num_processes, time / 1_000_000.0])
-  end)
+  :io.format("~6B    ~.6f~n", [100, time / 1_000_000.0])
