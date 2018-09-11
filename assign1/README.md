@@ -36,7 +36,7 @@ Where 3 is the number N which is range in which the first number of solution set
 
 3. The running time for the above as reported by time for the above. The ratio of CPU time to REAL TIME tells you how many cores were effec- tively used in the computation.
 
- Depending upon on the workunit 
+ Depending upon the workunit 
 
 | Workunit | Time |
 | ------ | ------ |
