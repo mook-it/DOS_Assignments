@@ -1,9 +1,8 @@
 defmodule Scheduler do
   def run(n, module, func, args, k) do
+    # IO.puts(Node.connect(:"aswin@Aswins-MacBook-Pro"))
 
-    #IO.puts(Node.connect(:"aswin@Aswins-MacBook-Pro"))
-
-    if (ConnectNode.connect() == true) do
+    if ConnectNode.connect() == true do
       run_multiple_node(n, module, func, args, k)
     else
       run_single_node(n, module, func, args, k)
@@ -14,19 +13,17 @@ defmodule Scheduler do
     1..n
     |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
     |> schedule_processes(args, k, [])
-
   end
 
   defp run_multiple_node(n, module, func, args, k) do
-    1..round(Float.ceil(n/2))
+    1..round(Float.ceil(n / 2))
     |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
     |> schedule_processes(args, k, [])
 
-    round(Float.ceil(n/2))+1..n
-    |> Enum.map(fn _ -> Node.spawn(:"aswin@Aswins-MacBook-Pro",module, func, [self()]) end)
+    (round(Float.ceil(n / 2)) + 1)..n
+    |> Enum.map(fn _ -> Node.spawn(:"aswin@Aswins-MacBook-Pro", module, func, [self()]) end)
     |> schedule_processes(args, k, [])
   end
-
 
   defp schedule_processes(processes, args, k, results) do
     receive do
@@ -58,8 +55,6 @@ defmodule ConnectNode do
   def connect do
     Node.connect(:"aswin@Aswins-MacBook-Pro")
   end
-
-
 end
 
 defmodule Worker do
@@ -73,8 +68,7 @@ defmodule Worker do
         comp = m - :math.floor(m)
         send(client, {:answer, i, comp, self()})
 
-
-        #IO.puts(Node.self())
+        # IO.puts(Node.self())
 
         work(scheduler)
 
@@ -93,20 +87,21 @@ defmodule Worker do
   end
 end
 
-
-
 args = System.argv()
 # IO.puts String.to_integer(Enum.at(args, 1))
-n = String.to_integer(Enum.at(args, 0))     #1_000_000
+# 1_000_000
+n = String.to_integer(Enum.at(args, 0))
 to_calculate = Enum.map(1..n, fn x -> x end)
-k = String.to_integer(Enum.at(args, 1))     #4
+# 4
+k = String.to_integer(Enum.at(args, 1))
 
-  {time, result} =
-    :timer.tc(
-      Scheduler,
-      :run,
-      [100 , Worker, :work, to_calculate, k])
+{time, result} =
+  :timer.tc(
+    Scheduler,
+    :run,
+    [100, Worker, :work, to_calculate, k]
+  )
 
 IO.inspect(result)
 
-  :io.format("~6B    ~.6f~n", [100, time / 1_000_000.0])
+:io.format("~6B    ~.6f~n", [100, time / 1_000_000.0])
