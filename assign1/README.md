@@ -1,4 +1,4 @@
-# COP5612 – Fall 2013
+# COP5615 – Fall 2018
 # Project 1 
 
 # Group Members 
@@ -51,7 +51,7 @@ Where 3 is the number N which is range in which the first number of solution set
 |   18    | 2.464876 |
  | 20  |   1.80413|
 
-###We calculate the ratio of CPU/real time = 3.9 for N=1000_000 k=1000
+### We calculate the ratio of CPU/real time = 3.9 for N=1000_000 k=1000
 
 real	22m14.858s
 user	80m42.700s
