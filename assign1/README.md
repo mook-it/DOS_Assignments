@@ -58,6 +58,11 @@ user: 0m8.983s
 sys:0m4.221s
 
 4. The largest problem you managed to solve
+N = 1000_000 k = 1000
+Workers: 8 time: 15.484459 sec
+
+N = 10_000_000 k = 1000
+Workers: 8 time: 238.7258 sec
 
 # Proof of concurrency
 
