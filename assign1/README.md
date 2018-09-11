@@ -5,7 +5,7 @@
 - Siddhant Mohan Mittal UFID: 6061-8545
 - Prafful Mehrotra UFID: 1099-5311
 
-# Porject Directory Structure
+# Project Directory Structure
 
 - Main directory contains Project Problem statement pdf and directory named code which contains the elixir mix project
 - In lib we have two files [proj1.exs] and [multi_machine.exs] 
