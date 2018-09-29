@@ -11,9 +11,10 @@ defmodule Gvp.Topologies do
     Enum.at(list,0)
   end
 
-  def get_neighbour(key) do
+  def get_neighbour(pid) do
     {_,list} = :ets.lookup(:pids_registry,"listOfpids")
     {_,topology} = :ets.lookup(:pids_registry,"topology")
+    key = find_indexes(list, fn(x) -> x == pid end)
     get_neighbour_helper(key,list,topology,length(list))
   end
 
