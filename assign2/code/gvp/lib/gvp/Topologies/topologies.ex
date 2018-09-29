@@ -1,12 +1,10 @@
 defmodule Gvp.Topologies do
-
-
-  def find_indexes(collection, function) do
-    Enum.filter_map(Enum.with_index(collection), fn({x, _y}) -> function.(x) end, elem(&1, 1))
-  end
+  use GenServer
+  @me __MODULE__
 
 
   def initalise_topology_module(list,topology) do
+    GenServer.start_link(__MODULE__, ,)
     table = :ets.new(:pids_registry, [:set, :protected])
     :ets.insert(table, {"listOfpids", list})
     :ets.insert(table, {"topology", topology})
@@ -20,7 +18,8 @@ defmodule Gvp.Topologies do
   def get_neighbour(pid) do
     {_,list} = :ets.lookup(:pids_registry,"listOfpids")
     {_,topology} = :ets.lookup(:pids_registry,"topology")
-    key = find_indexes(list, fn(x) -> x == pid end)
+
+    key = Enum.with_index(list) |> Enum.filter_map(fn {x, _} -> x == pid end, fn {_, i} -> i end)
     get_neighbour_helper(key,list,topology,length(list))
   end
 

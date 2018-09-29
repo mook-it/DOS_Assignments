@@ -1,4 +1,4 @@
-defmodule Gvp.Gossip.Worker do
+defmodule Gvp.Gossip.Node do
   use GenServer, restart: :transient
   import Gvp.Topologies
 

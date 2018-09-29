@@ -4,8 +4,8 @@ defmodule Gvp.Gossip.Driver do
   @me __MODULE__
 
   # API
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, {num_of_nodes, topology}, name: @me)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: @me)
   end
 
   def done() do

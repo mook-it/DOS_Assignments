@@ -1,0 +1,10 @@
+{application,gvp,
+             [{applications,[kernel,stdlib,elixir,logger]},
+              {description,"gvp"},
+              {modules,['Elixir.Gvp','Elixir.Gvp.Application',
+                        'Elixir.Gvp.Gossip.Driver','Elixir.Gvp.Gossip.Node',
+                        'Elixir.Gvp.Gossip.NodeSupervisor',
+                        'Elixir.Gvp.Topologies']},
+              {registered,[]},
+              {vsn,"0.1.0"},
+              {mod,{'Elixir.Gvp.Application',[]}}]}.
