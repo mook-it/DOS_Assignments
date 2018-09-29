@@ -1,5 +1,6 @@
 defmodule Scheduler do
   def run(n, module, func, args, k) do
+    # IO.puts(Node.connect(:"aswin@Aswins-MacBook-Pro"))
 
     IO.puts(Node.connect(:prafful@Prafful))
     IO.inspect(Node.list())
@@ -17,7 +18,6 @@ defmodule Scheduler do
     1..n
     |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
     |> schedule_processes(args, k, [])
-
   end
 
   defp run_multiple_node(n, module, func, args, k) do
@@ -29,7 +29,6 @@ defmodule Scheduler do
       #schedule_processes(args1, k, [])
   processes2 = round(Float.ceil(n/2))+1..n
     |> Enum.map(fn _ -> spawn(module, func, [self()]) end)
-
   processes = processes1 ++ processes2
 
   #IO.inspect [length(processes), length(processes1), length(processes2)]
@@ -37,7 +36,6 @@ defmodule Scheduler do
   schedule_processes(processes,args, k, [])
 
   end
-
 
   defp schedule_processes(processes, args, k, results) do
     receive do
@@ -69,8 +67,6 @@ defmodule ConnectNode do
   def connect do
     Node.connect(:prafful@Prafful)
   end
-
-
 end
 
 defmodule Worker do
@@ -84,8 +80,7 @@ defmodule Worker do
         comp = m - :math.floor(m)
         send(client, {:answer, i, comp, self()})
 
-
-        #IO.puts(Node.self())
+        # IO.puts(Node.self())
 
         work(scheduler)
 
@@ -108,18 +103,20 @@ end
 defmodule Multi_test do
   def find(n,k) do
     #args = System.argv()
-    # IO.puts String.to_integer(Enum.at(args, 1))
-    #n = String.to_integer(Enum.at(args, 0))     #1_000_000
-    to_calculate = Enum.map(1..n, fn x -> x end)
-    #k = String.to_integer(Enum.at(args, 1))     #4
+args = System.argv()
+# IO.puts String.to_integer(Enum.at(args, 1))
+# 1_000_000
+n = String.to_integer(Enum.at(args, 0))
+to_calculate = Enum.map(1..n, fn x -> x end)
+# 4
+k = String.to_integer(Enum.at(args, 1))
 
-    {time, result} =
-      :timer.tc(
-        Scheduler,
-        :run,
-        [1000 , Worker, :work, to_calculate, k])
-
-    IO.inspect(result)
+{time, result} =
+  :timer.tc(
+    Scheduler,
+    :run,
+    [100, Worker, :work, to_calculate, k]
+  )
 
     :io.format("~6B    ~.6f~n", [100, time / 1_000_000.0])
   end

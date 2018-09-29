@@ -49,7 +49,6 @@ defmodule Worker do
     end
   end
 
-  # very inefficient, deliberately
   defp calc(i, k, j) do
     if(i == j + k - 1) do
       i * i
@@ -59,27 +58,24 @@ defmodule Worker do
   end
 end
 
-
-
 args = System.argv()
-# IO.puts String.to_integer(Enum.at(args, 1))
-  n = String.to_integer(Enum.at(args, 0))     #1_000_000
-  to_calculate = Enum.map(1..n, fn x -> x end)
-  k = String.to_integer(Enum.at(args, 1))     #4
+n = String.to_integer(Enum.at(args, 0))
+to_calculate = Enum.map(1..n, fn x -> x end)
+k = String.to_integer(Enum.at(args, 1))
 
-  Enum.each(1..1, fn num_processes ->
-    num_processes = 100
-    {time, result} =
-      :timer.tc(
-        Scheduler,
-        :run,
-        [num_processes , Worker, :work, to_calculate, k]
-      )
+Enum.each(1..20, fn num_processes ->
+  {time, result} =
+    :timer.tc(
+      Scheduler,
+      :run,
+      [num_processes, Worker, :work, to_calculate, k]
+    )
 
-    if num_processes == 1 do
-      IO.puts(inspect(result))
-      IO.puts("\n #   time (s)")
-    end
+  if num_processes == 1 do
+    result = Enum.sort(result)
+    IO.puts(inspect(result))
+    IO.puts("\n #   time (s)")
+  end
 
-    :io.format("~6B     ~.6f~n", [num_processes, time / 1_000_000.0])
-  end)
+  :io.format("~6B     ~.6f~n", [num_processes, time / 1_000_000.0])
+end)
