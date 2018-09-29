@@ -1,5 +1,11 @@
 defmodule Gvp.Topologies do
 
+
+  def find_indexes(collection, function) do
+    Enum.filter_map(Enum.with_index(collection), fn({x, _y}) -> function.(x) end, elem(&1, 1))
+  end
+
+
   def initalise_topology_module(list,topology) do
     table = :ets.new(:pids_registry, [:set, :protected])
     :ets.insert(table, {"listOfpids", list})
