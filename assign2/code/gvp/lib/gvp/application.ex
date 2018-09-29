@@ -5,8 +5,9 @@ defmodule Gvp.Application do
     children = [
       # Starts a worker by calling: Gvp.Worker.start_link(arg)
       # {Gvp.Worker, arg},
-      {Gvp.Gossip.Driver, {num_of_nodes, topology}},
-      Gvp.Gossip.NodeSupervisor
+      Gvp.Topologies,
+      Gvp.Gossip.NodeSupervisor,
+      {Gvp.Gossip.Driver, {20, "line"}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
