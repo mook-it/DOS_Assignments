@@ -23,9 +23,12 @@ defmodule Gvp.Gossip.Driver do
 
   def handle_info(:kickoff, node_count) do
     1..node_count
-    |> Enum.each(fn _ -> Gossip.NodeSupervisor.add_worker() end)
+    |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
+    |> topology()
     # topology.init(num_of_nodes, topology, list)
+
     # node = topology.get_first_node()
+    # send(pid, :next)
     {:noreply, node_count}
   end
 
