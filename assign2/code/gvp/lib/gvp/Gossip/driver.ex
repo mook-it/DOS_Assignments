@@ -1,5 +1,6 @@
 defmodule Gvp.Gossip.Driver do
   use GenServer
+  import Gvp.Topologies
   @me __MODULE__
 
   # API
