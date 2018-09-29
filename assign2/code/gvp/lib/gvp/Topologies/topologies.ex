@@ -1,6 +1,12 @@
 defmodule Gvp.Topologies do
 
-    def get_neighbours(list,topology) do
+
+    def get_neighbours(list,topolgy) do
+      list 
+    end
+
+
+    def get_neighbours_helper(list,topology) do
 
       numNodes = length(list)
 
