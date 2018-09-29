@@ -25,11 +25,10 @@ defmodule Gvp.Gossip.Driver do
   def handle_info(:kickoff, node_count) do
     1..node_count
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
-    |> topology()
-    # topology.init(num_of_nodes, topology, list)
+    |> initalise_topology_module("line")
 
-    # node = topology.get_first_node()
-    # send(pid, :next)
+    node = get_first()
+    send(node, :next)
     {:noreply, node_count}
   end
 
