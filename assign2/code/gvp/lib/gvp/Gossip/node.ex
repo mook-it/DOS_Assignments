@@ -7,12 +7,12 @@ defmodule Gvp.Gossip.Node do
   end
 
   def init(:no_args) do
-    { :ok, 0 }
+    {:ok, 0}
   end
 
   def handle_info(:next, count) do
-    next_pid = get_neighbour(self())
+    next_pid = get_random_neighbour(self())
     send(next_pid, :next)
-    { :noreply, count + 1}
+    {:noreply, count + 1}
   end
 end

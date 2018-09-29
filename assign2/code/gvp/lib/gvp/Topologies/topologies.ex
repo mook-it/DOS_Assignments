@@ -1,47 +1,81 @@
 defmodule Gvp.Topologies do
-  use GenServer
-  @me __MODULE__
+  def child_spec(args) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [args]}
+    }
+  end
 
+  def start_link(_) do
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
+  end
 
-  def initalise_topology_module(list,topology) do
-    GenServer.start_link(__MODULE__, ,)
-    table = :ets.new(:pids_registry, [:set, :protected])
-    :ets.insert(table, {"listOfpids", list})
-    :ets.insert(table, {"topology", topology})
+  def initialise(list, topology) do
+    Agent.update(__MODULE__, fn map ->
+      map = Gvp.Topo.get_neighbours(list, topology)
+      # initialise_helper(map, list, topology) end)
+      # IO.inspect(map)
+      # [head | tail] = map
+      IO.inspect(map)
+      map
+    end)
+  end
+
+  def get_random_neighbour(pid) do
+    Agent.get(__MODULE__, fn map -> Enum.random(Map.get(map, pid)) end)
   end
 
   def get_first() do
-    {_,list} = :ets.lookup(:pids_registry,"listOfpids")
-    Enum.at(list,0)
+    Agent.get(__MODULE__, fn map -> List.first(Map.keys(map)) end)
   end
 
-  def get_neighbour(pid) do
-    {_,list} = :ets.lookup(:pids_registry,"listOfpids")
-    {_,topology} = :ets.lookup(:pids_registry,"topology")
-
-    key = Enum.with_index(list) |> Enum.filter_map(fn {x, _} -> x == pid end, fn {_, i} -> i end)
-    get_neighbour_helper(key,list,topology,length(list))
+  def update(pid) do
+    Agent.update(__MODULE__, fn map -> remove(map, pid) end)
   end
 
+  # def initialise_helper(map, list, topology) do
+  #   numNodes = length(list)
+  #
+  #   map = %{a: 1}
+  #
+  #   cond do
+  #     topology == "line" ->
+  #       neighboursList =
+  #         0..(numNodes - 1)
+  #         |> Enum.map(fn i ->
+  #           cond do
+  #             i == 0 -> [Enum.at(list, i + 1)]
+  #             i == numNodes - 1 -> [Enum.at(list, i - 1)]
+  #             true -> [Enum.at(list, i - 1), Enum.at(list, i + 1)]
+  #           end
+  #         end)
+  #
+  #       add_to_map(list, neighboursList, map)
+  #       IO.inspect(map)
+  #   end
+  # end
 
-  def get_neighbour_helper(key,list,topology,numNodes) do
-    neighboursList = []
-    cond do
-      topology == "line"  -> neighboursList =  cond do
-        key == 1 -> [key+1]
-        key == numNodes -> [key-1]
-        true -> [key-1,key+1]
-      end
-    end
-    index = :rand.uniform(length(neighboursList))-1
-    neighbour_id =  Enum.at(neighboursList,index)
-    Enum.at(list,neighbour_id)
+  # def add_to_map(list, neighboursList, map) do
+  #   [head1 | tail1] = list
+  #   [head2 | tail2] = neighboursList
+  #
+  #   if tail1 == [] do
+  #   else
+  #     Map.put_new(map, head1, head2)
+  #     IO.inspect(map)
+  #     add_to_map(tail1, tail2, map)
+  #   end
+  # end
+
+  def remove(map, pid) do
+    Map.delete(map, pid)
+
+    Enum.each(map, fn entry ->
+      {key, list} = entry
+      List.delete(list, pid)
+      Map.update!(map, key, fn _ -> list end)
+    end)
+
+    map
   end
-
-  def delete_pid(key) do
-    {_,list} = :ets.lookup(:pids_registry,"listOfpids")
-    value = Enum.at(list,key)
-    :ets.update_element(:pids_registry,"listOfpids",List.delete(list,value))
-  end
-
 end

@@ -3,7 +3,7 @@
               {description,"gvp"},
               {modules,['Elixir.Gvp','Elixir.Gvp.Application',
                         'Elixir.Gvp.Gossip.Driver','Elixir.Gvp.Gossip.Node',
-                        'Elixir.Gvp.Gossip.NodeSupervisor',
+                        'Elixir.Gvp.Gossip.NodeSupervisor','Elixir.Gvp.Topo',
                         'Elixir.Gvp.Topologies']},
               {registered,[]},
               {vsn,"0.1.0"},

@@ -1,6 +1,5 @@
 defmodule Gvp.Gossip.Driver do
   use GenServer
-  import Gvp.Topologies
   @me __MODULE__
 
   # API
@@ -25,10 +24,11 @@ defmodule Gvp.Gossip.Driver do
   def handle_info(:kickoff, node_count) do
     1..node_count
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
-    |> initalise_topology_module("line")
+    |> Gvp.Topologies.initialise("line")
 
-    node = get_first()
-    send(node, :next)
+    node = Gvp.Topologies.get_first()
+    IO.inspect(node)
+    # send(node, :next)
     {:noreply, node_count}
   end
 

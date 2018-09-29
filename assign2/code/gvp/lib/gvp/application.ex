@@ -5,6 +5,7 @@ defmodule Gvp.Application do
     children = [
       # Starts a worker by calling: Gvp.Worker.start_link(arg)
       # {Gvp.Worker, arg},
+      Gvp.Topologies,
       Gvp.Gossip.NodeSupervisor,
       {Gvp.Gossip.Driver, {20, "line"}}
     ]
