@@ -49,7 +49,6 @@ defmodule Worker do
     end
   end
 
-  # very inefficient, deliberately
   defp calc(i, k, j) do
     if(i == j + k - 1) do
       i * i
