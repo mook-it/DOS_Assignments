@@ -11,5 +11,6 @@ defmodule Gvp.Gossip.NodeSupervisor do
 
   def add_node() do
     {:ok, _pid} = DynamicSupervisor.start_child(@me, Gvp.Gossip.Node)
+    _pid
   end
 end

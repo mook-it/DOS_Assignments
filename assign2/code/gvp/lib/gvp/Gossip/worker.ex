@@ -6,9 +6,11 @@ defmodule Gvp.Gossip.Worker do
   end
 
   def init(:no_args) do
-    Process.send_after(self(), :do_one_file, 0)
-    { :ok, %{:msg => "", :times => 0} }
+    { :ok, 0 }
   end
 
-  
+  def handle_info(:next, count) do
+    next_pid = topology.get_neighbour(self())
+    
+  end
 end
