@@ -11,11 +11,8 @@ defmodule Gvp.Topologies do
   end
 
   def initialise(list, topology) do
-    Agent.update(__MODULE__, fn map ->
+    Agent.update(__MODULE__, fn _ ->
       map = Gvp.Topo.get_neighbours(list, topology)
-      # initialise_helper(map, list, topology) end)
-      # IO.inspect(map)
-      # [head | tail] = map
       IO.inspect(map)
       map
     end)
@@ -68,14 +65,15 @@ defmodule Gvp.Topologies do
   # end
 
   def remove(map, pid) do
-    Map.delete(map, pid)
+    IO.inspect map
+    map = Map.delete(map, pid)
 
     Enum.each(map, fn entry ->
       {key, list} = entry
       List.delete(list, pid)
       Map.update!(map, key, fn _ -> list end)
     end)
-
+    IO.inspect map
     map
   end
 end

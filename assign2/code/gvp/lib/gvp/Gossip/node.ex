@@ -1,6 +1,5 @@
 defmodule Gvp.Gossip.Node do
   use GenServer, restart: :transient
-  import Gvp.Topologies
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :no_args)
@@ -11,7 +10,13 @@ defmodule Gvp.Gossip.Node do
   end
 
   def handle_info(:next, count) do
-    next_pid = get_random_neighbour(self())
+    if(count == 10) do
+      Gvp.Gossip.Driver.done()
+      {:stop, :normal, nil}
+    end
+    next_pid = Gvp.Topologies.get_random_neighbour(self())
+    IO.inspect [self(), count, next_pid]
+    # IO.inspect(next_pid)
     send(next_pid, :next)
     {:noreply, count + 1}
   end

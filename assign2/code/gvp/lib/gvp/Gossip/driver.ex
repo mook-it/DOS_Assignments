@@ -28,13 +28,17 @@ defmodule Gvp.Gossip.Driver do
 
     node = Gvp.Topologies.get_first()
     IO.inspect(node)
-    # send(node, :next)
+    send(node, :next)
     {:noreply, node_count}
   end
 
+  def handle_cast(:done, _worker_count = 1) do
+    System.halt(0)
+  end
+
   def handle_call(:done, _from, node_count) do
-    # REMOVE _FROM via topology
-    # topology.update(_from)
+    Gvp.Topologies.update(_from)
+    
     {:noreply, node_count - 1}
   end
 
