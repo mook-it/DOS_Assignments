@@ -8,6 +8,7 @@ defmodule Gvp.Application do
       Gvp.Topologies,
       Gvp.Gossip.NodeSupervisor,
       {Gvp.Gossip.Driver, {100000, "2D"}}
+
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -7,39 +7,33 @@ defmodule Gvp.Gossip.Driver do
     GenServer.start_link(__MODULE__, args, name: @me)
   end
 
-  def done() do
-    GenServer.cast(@me, :done)
+  def done(pid) do
+    GenServer.cast(@me, {:done, pid})
   end
 
   # SERVER
   def init({num_of_nodes, topology}) do
     Process.send_after(self(), :kickoff, 0)
-    {:ok, {num_of_nodes,topology}}
+    {:ok, {num_of_nodes,topology, []}}
   end
 
-  def handle_info(:kickoff, {node_count,topology}) do
+  def handle_info(:kickoff, {node_count,topology, deleted_pids}) do
     1..node_count
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
     |> Gvp.Topologies.initialise(topology)
-
+    
     node = Gvp.Topologies.get_first()
-    send(node, :next)
-    {:noreply, {node_count,topology}}
+    GenServer.cast(node, :next)
+    {:noreply, {node_count,topology, deleted_pids}}
   end
-  #
-  # def handle_cast(:done, {_node_count = 1,_topology}) do
-  #   # IO.puts "HIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
-  #   System.halt(0)
-  # end
 
-  def handle_cast(:done, {node_count, topology}) do
-    IO.puts node_count
+
+  def handle_cast({:done,pid}, {node_count, topology, deleted_pids}) do
+    deleted_pids = deleted_pids ++ [pid]
+    IO.inspect deleted_pids
     if(node_count <= 1) do
       System.halt(0)
     end
-
-    # new_state = Gvp.Topologies.update(from, node_count)
-    # new_state = node_count - 1
-    {:noreply, {node_count - 1, topology}}
+    {:noreply, {node_count - 1, topology, deleted_pids}}
   end
 end
