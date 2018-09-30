@@ -1,80 +1,88 @@
 defmodule Gvp.Topologies do
+  use GenServer
+  @me __MODULE__
 
-  def child_spec(args) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, [args]}
-    }
-  end
-
+  # API
   def start_link(_) do
-    Agent.start_link(fn -> %{} end, name: __MODULE__)
+    GenServer.start_link(__MODULE__, :no_args, name: @me)
   end
 
   def initialise(list, topology) do
-    Agent.update(__MODULE__, fn _ ->
-      map = Gvp.Topo.get_neighbours(list, topology)
-      IO.inspect(map)
-      map
-    end)
+    GenServer.cast(@me, {:initialise_topo, list, topology})
+  end
+
+  def get_all_neighbours(pid) do
+    GenServer.call(@me, {:neighbours, pid})
   end
 
   def get_random_neighbour(pid) do
-    Agent.get(__MODULE__, fn map -> Enum.random(Map.get(map, pid)) end)
+    GenServer.call(@me, {:random_neighbour, pid})
   end
 
   def get_first() do
-    Agent.get(__MODULE__, fn map -> List.first(Map.keys(map)) end)
+    GenServer.call(@me, :get_first)
   end
 
-  def update(pid) do
-    Agent.update(__MODULE__, fn map -> remove(map, pid) end)
-  end
-
-  # def initialise_helper(map, list, topology) do
-  #   numNodes = length(list)
-  #
-  #   map = %{a: 1}
-  #
-  #   cond do
-  #     topology == "line" ->
-  #       neighboursList =
-  #         0..(numNodes - 1)
-  #         |> Enum.map(fn i ->
-  #           cond do
-  #             i == 0 -> [Enum.at(list, i + 1)]
-  #             i == numNodes - 1 -> [Enum.at(list, i - 1)]
-  #             true -> [Enum.at(list, i - 1), Enum.at(list, i + 1)]
-  #           end
-  #         end)
-  #
-  #       add_to_map(list, neighboursList, map)
-  #       IO.inspect(map)
-  #   end
+  # def update(pid, node_count)  do
+  #   GenServer.call(@me, {:update, pid, node_count})
   # end
 
-  # def add_to_map(list, neighboursList, map) do
-  #   [head1 | tail1] = list
-  #   [head2 | tail2] = neighboursList
-  #
-  #   if tail1 == [] do
-  #   else
-  #     Map.put_new(map, head1, head2)
-  #     IO.inspect(map)
-  #     add_to_map(tail1, tail2, map)
-  #   end
-  # end
-
-  def remove(map, pid) do
-    IO.inspect map
-    map = Map.delete(map, pid)
-
-    Enum.each(map, fn entry ->
-      {key, list} = entry
-      List.delete(list, pid)
-      Map.update!(map, key, fn _ -> list end)
-    end)
-    IO.inspect map
-    map
+  # SERVER
+  def init(:no_args) do
+    {:ok, %{}}
   end
+
+  def handle_cast({:initialise_topo, list, topology}, map) do
+    map = Gvp.Topo.get_neighbours(list, topology)
+    {:noreply, map}
+  end
+
+  def handle_call({:random_neighbour, pid}, _from, map) do
+    neighbours = Map.get(map, pid)
+
+    random_pid =
+      if(neighbours == []) do
+        0
+      else
+        Enum.random(neighbours)
+      end
+
+    {:reply, random_pid, map}
+  end
+
+  def handle_call({:neighbours, pid}, _from, map) do
+    neighbours = Map.get(map, pid)
+
+    {:reply, neighbours, map}
+  end
+
+  def handle_call(:get_first, _from, map) do
+    {:reply, List.first(Map.keys(map)), map}
+  end
+
+  # def handle_call({:update, pid, node_count}, _from, map) do
+  #   {:reply, node_count-1,remove(map, pid)}
+  # end
+  #
+  # defp remove(map, pid) do
+  #   map = Map.delete(map, pid)
+  #
+  #   new_lists =
+  #     Enum.map(map, fn entry ->
+  #       {key, list} = entry
+  #       List.delete(list, pid)
+  #     end)
+  #
+  #   pids = Map.keys(map)
+  #   i = length(pids)
+  #
+  #   map =
+  #     Enum.reduce(0..(i - 1), %{}, fn x, acc ->
+  #       Map.put(acc, Enum.at(pids, x), Enum.at(new_lists, x))
+  #     end)
+  #
+  #   IO.puts("item deleted:")
+  #   IO.inspect(pid)
+  #   map
+  # end
 end

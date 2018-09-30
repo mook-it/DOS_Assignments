@@ -7,7 +7,7 @@ defmodule Gvp.Application do
       # {Gvp.Worker, arg},
       Gvp.Topologies,
       Gvp.Gossip.NodeSupervisor,
-      {Gvp.Gossip.Driver, {20, "line"}}
+      {Gvp.Gossip.Driver, {999, "imp2D"}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

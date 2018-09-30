@@ -1,34 +1,29 @@
 defmodule Gvp.Topo do
-
   def get_neighbours(list, topology) do
-
-    neighbours = get_neighbours_helper(list,topology)
+    neighbours = get_neighbours_helper(list, topology)
 
     numNodes = length(list)
 
-      Enum.reduce(0..(numNodes - 1), %{}, fn x, acc ->
-        Map.put(acc, Enum.at(list, x), Enum.at(neighbours, x))
-      end)
-
+    Enum.reduce(0..(numNodes - 1), %{}, fn x, acc ->
+      Map.put(acc, Enum.at(list, x), Enum.at(neighbours, x))
+    end)
   end
 
   def get_neighbours_helper(list, topology) do
     numNodes = length(list)
 
-
     cond do
       topology == "line" ->
-          for i <- 0..(numNodes - 1) do
-            neighboursList =
-              cond do
-                i == 0 -> [i + 1]
-                i == numNodes - 1 -> [i - 1]
-                true -> [i - 1, i + 1]
-              end
+        for i <- 0..(numNodes - 1) do
+          neighboursList =
+            cond do
+              i == 0 -> [i + 1]
+              i == numNodes - 1 -> [i - 1]
+              true -> [i - 1, i + 1]
+            end
 
-            [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x) end)
-          end
-
+          [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x) end)
+        end
 
       topology == "impline" ->
         for i <- 0..(numNodes - 1) do
@@ -248,7 +243,6 @@ defmodule Gvp.Topo do
     end
   end
 
-
   def connect_component(l1, l2) do
     l2 = Enum.at(l2, 0)
     l1 = Enum.at(l1, 0)
@@ -263,7 +257,3 @@ defmodule Gvp.Topo do
     end
   end
 end
-
-processes1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
-
-IO.inspect(Gvp.Topo.get_neighbours(processes1,"sphere"))
