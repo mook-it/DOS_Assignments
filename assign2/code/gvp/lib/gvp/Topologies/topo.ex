@@ -1,12 +1,23 @@
 defmodule Gvp.Topo do
+
   def get_neighbours(list, topology) do
+
+    neighbours = get_neighbours_helper(list,topology)
+
     numNodes = length(list)
 
-    map = %{}
+      Enum.reduce(0..(numNodes - 1), %{}, fn x, acc ->
+        Map.put(acc, Enum.at(list, x), Enum.at(neighbours, x))
+      end)
+
+  end
+
+  def get_neighbours_helper(list, topology) do
+    numNodes = length(list)
+
 
     cond do
       topology == "line" ->
-        neighbours =
           for i <- 0..(numNodes - 1) do
             neighboursList =
               cond do
@@ -15,19 +26,9 @@ defmodule Gvp.Topo do
                 true -> [i - 1, i + 1]
               end
 
-            l = [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x) end)
+            [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x) end)
           end
 
-        IO.inspect(list)
-        IO.inspect(neighbours)
-
-        map =
-          Enum.reduce(0..(numNodes - 1), %{}, fn x, acc ->
-            Map.put(acc, Enum.at(list, x), Enum.at(neighbours, x))
-          end)
-
-        IO.inspect(map)
-        map
 
       topology == "impline" ->
         for i <- 0..(numNodes - 1) do
@@ -41,14 +42,12 @@ defmodule Gvp.Topo do
           l = [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x) end)
           l1 = list -- [Enum.at(list, i)]
           l1 = l1 -- l
-          l = l ++ [Enum.random(l1)]
-          Map.put(map, Enum.at(list, i), l)
+          l ++ [Enum.random(l1)]
         end
 
       topology == "full" ->
         for i <- 0..(numNodes - 1) do
-          l = list -- [Enum.at(list, i)]
-          Map.put(map, Enum.at(list, i), l)
+          list -- [Enum.at(list, i)]
         end
 
       topology == "2D" ->
@@ -68,8 +67,7 @@ defmodule Gvp.Topo do
               true -> [i - 1, i + 1, i - rowcnt, i + rowcnt]
             end
 
-          l = [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
-          Map.put(map, Enum.at(list, i - 1), l)
+          [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
         end
 
       topology == "imp2D" ->
@@ -93,8 +91,7 @@ defmodule Gvp.Topo do
 
           l1 = list -- [Enum.at(list, i - 1)]
           l1 = l1 -- l
-          l = l ++ [Enum.random(l1)]
-          Map.put(map, Enum.at(list, i - 1), l)
+          l ++ [Enum.random(l1)]
         end
 
       topology == "sphere" ->
@@ -131,8 +128,7 @@ defmodule Gvp.Topo do
                 [i - 1, i + 1, i - rowcnt, i + rowcnt]
             end
 
-          l = [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
-          Map.put(map, Enum.at(list, i - 1), l)
+          [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
         end
 
       topology == "3D" ->
@@ -224,8 +220,7 @@ defmodule Gvp.Topo do
                 [i - 1, i + 1, i - rowcnt, i + rowcnt, i + colmcnt, i - colmcnt]
             end
 
-          l = [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
-          Map.put(map, Enum.at(list, i - 1), l)
+          [] ++ Enum.map(neighboursList, fn x -> Enum.at(list, x - 1) end)
         end
 
       topology == "rand2D" ->
@@ -248,22 +243,11 @@ defmodule Gvp.Topo do
 
           l = Enum.filter(l, &(!is_nil(&1)))
           l = l -- [key1]
-          l2 ++ [%{key1 => l}]
+          l2 ++ [l]
         end)
     end
   end
 
-  def func(map, neighbours, list) do
-    if list == [] do
-    else
-      [head1 | tail1] = list
-      [head2 | tail2] = neighbours
-
-      Map.put_new(map, head1, head2)
-      IO.inspect(map)
-      func(map, tail1, tail2)
-    end
-  end
 
   def connect_component(l1, l2) do
     l2 = Enum.at(l2, 0)
@@ -280,8 +264,6 @@ defmodule Gvp.Topo do
   end
 end
 
-# processes1 = [1,2,3,4]
-# ,5,6,7,8,9,10,11,12,13,14,15,16]
-# ,17,18,19,20,21,22,23,24,25,26,27]
+processes1 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]
 
-# IO.inspect(Gvp.Topologies.get_neighbours(processes1,"imp2D"))
+IO.inspect(Gvp.Topo.get_neighbours(processes1,"sphere"))
