@@ -18,15 +18,9 @@ defmodule Gvp.Gossip.Driver do
   end
 
   def handle_info(:kickoff, {node_count,topology, deleted_pids}) do
-
-    list =
     1..node_count
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
-
-
-    IO.inspect(list)
-
-      Gvp.Topologies.initialise(list,topology)
+    |> Gvp.Topologies.initialise(topology)
 
     
     node = Gvp.Topologies.get_first()

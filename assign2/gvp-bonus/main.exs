@@ -3,6 +3,7 @@
     #IO.puts("in here")
     numNodes = String.to_integer(Enum.at(args, 0))
     topology = Enum.at(args, 1)
+    failure = String.to_integer(Enum.at(args, 2))
 
     #IO.puts(numNodes)
-    Gvp.Application.start(:normal,{numNodes,topology})
+  Gvpbonus.Application.start(:normal,{numNodes,topology,failure})
