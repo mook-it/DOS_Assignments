@@ -1,4 +1,4 @@
-defmodule Gvp.Gossip.Driver do
+defmodule Gvp.PushSum.Driver do
   use GenServer
   @me __MODULE__
 
@@ -19,11 +19,11 @@ defmodule Gvp.Gossip.Driver do
 
   def handle_info(:kickoff, {node_count, topology, deleted_pids}) do
     1..node_count
-    |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
+    |> Enum.map(fn i -> Gvp.Gossip.NodeSupervisor.add_node(i) end)
     |> Gvp.Topologies.initialise(topology)
 
     node = Gvp.Topologies.get_first()
-    GenServer.cast(node, :next)
+    GenServer.cast(node, {:next, 100, 100})
     {:noreply, {node_count, topology, deleted_pids}}
   end
 

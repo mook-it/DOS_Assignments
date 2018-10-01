@@ -21,6 +21,7 @@ defmodule Gvp.Gossip.Node do
         Gvp.Gossip.Driver.done(self())
       end
     end
+
     {:noreply, count + 1}
   end
 end
