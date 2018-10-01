@@ -10,10 +10,7 @@ defmodule Gvp.Gossip.Node do
   end
 
   def handle_cast(:next, count) do
-    IO.inspect([self(), count])
-
     if(count == 0) do
-      #         IO.inspect [self(), count]
       Gvp.Gossip.Driver.done(self())
     end
 
