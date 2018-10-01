@@ -18,9 +18,16 @@ defmodule Gvp.Gossip.Driver do
   end
 
   def handle_info(:kickoff, {node_count,topology, deleted_pids}) do
+
+    list =
     1..node_count
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
-    |> Gvp.Topologies.initialise(topology)
+
+
+    IO.inspect(list)
+
+      Gvp.Topologies.initialise(list,topology)
+
     
     node = Gvp.Topologies.get_first()
     GenServer.cast(node, :next)
@@ -30,7 +37,8 @@ defmodule Gvp.Gossip.Driver do
 
   def handle_cast({:done,pid}, {node_count, topology, deleted_pids}) do
     deleted_pids = deleted_pids ++ [pid]
-    IO.inspect deleted_pids
+    #IO.inspect deleted_pids
+    #IO.puts node_count
     if(node_count <= 1) do
       System.halt(0)
     end
