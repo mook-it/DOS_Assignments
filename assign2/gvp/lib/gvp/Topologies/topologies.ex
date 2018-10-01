@@ -34,19 +34,14 @@ defmodule Gvp.Topologies do
 
   def handle_cast({:initialise_topo, list, topology}, map) do
     map = Gvp.Topo.get_neighbours(list, topology)
-    #IO.inspect map
+    # IO.inspect map
     {:noreply, map}
   end
 
   def handle_call({:random_neighbour, pid}, _from, map) do
     neighbours = Map.get(map, pid)
 
-    random_pid =
-      if(neighbours == []) do
-        0
-      else
-        Enum.random(neighbours)
-      end
+    random_pid = Enum.random(neighbours)
 
     {:reply, random_pid, map}
   end
