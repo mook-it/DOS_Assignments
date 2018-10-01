@@ -1,25 +1,25 @@
 defmodule Gvpbonus.Application do
   use Application
 
-  def start(type,args) do
+  def start(_type, {numNodes, topology, algorithm,failure}) do
+    children =
+      if algorithm == "gossip" do
+        [
+          Gvpbonus.Topologies,
+          Gvpbonus.Gossip.NodeSupervisor,
+          {Gvpbonus.Gossip.Driver, {numNodes, topology,failure}}
+        ]
+      else
+        [
+          Gvpbonus.Topologies,
+          Gvpbonus.PushSum.NodeSupervisor,
+          {Gvpbonus.PushSum.Driver, {numNodes, topology,failure}}
+        ]
+      end
 
-    #IO.puts("in here2")
-    children = [
-      # Starts a worker by calling: Gvp.Worker.start_link(arg)
-      # {Gvp.Worker, arg},
-      Gvpbonus.Topologies,
-      Gvpbonus.Gossip.NodeSupervisor,
-      {Gvpbonus.Gossip.Driver, args}
-
-    ]
-
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_all, name: Gvpbonus.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
 end
-
 
 
