@@ -19,17 +19,17 @@ defmodule Gvp.PushSum.Driver do
 
   def handle_info(:kickoff, {node_count, topology, deleted_pids}) do
     1..node_count
-    |> Enum.map(fn i -> Gvp.Gossip.NodeSupervisor.add_node(i) end)
+    |> Enum.map(fn i -> Gvp.PushSum.NodeSupervisor.add_node(i) end)
     |> Gvp.Topologies.initialise(topology)
 
     node = Gvp.Topologies.get_first()
-    GenServer.cast(node, {:next, 100, 100})
+    GenServer.cast(node, {:next, 0, 0})
     {:noreply, {node_count, topology, deleted_pids}}
   end
 
   def handle_cast({:done, pid}, {node_count, topology, deleted_pids}) do
     deleted_pids = deleted_pids ++ [pid]
-    IO.inspect(deleted_pids)
+    IO.inspect([deleted_pids, node_count])
 
     if(node_count <= 1) do
       System.halt(0)

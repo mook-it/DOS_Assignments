@@ -10,7 +10,7 @@ defmodule Gvp.PushSum.NodeSupervisor do
   end
 
   def add_node(i) do
-    {:ok, _pid} = DynamicSupervisor.start_child(@me, {Gvp.Gossip.Node, i})
+    {:ok, _pid} = DynamicSupervisor.start_child(@me, {Gvp.PushSum.Node, i})
     _pid
   end
 end

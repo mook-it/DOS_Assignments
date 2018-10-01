@@ -29,8 +29,8 @@ defmodule Gvp.Gossip.Driver do
 
   def handle_cast({:done, pid}, {node_count, topology, deleted_pids}) do
     deleted_pids = deleted_pids ++ [pid]
-    IO.inspect(deleted_pids)
-
+    # IO.inspect deleted_pids
+    # IO.puts node_count
     if(node_count <= 1) do
       System.halt(0)
     end
