@@ -79,10 +79,6 @@ $ mix run --no-halt main.exs 1000 imp2D pushsum 20
 | arg3     | algorithm                  | gossip, pushsum                                   |
 | arg4     | percentage of faulty nodes | any value between 0 and 100                       |
 
-- arg2 - topology to use
-- arg3 - algorithm to use
-- arg4 - percentage of faulty nodes
-
 ### Output Format:
 
 Example output for gvp:
