@@ -21,7 +21,6 @@ defmodule Gvp.PushSum.Node do
     changes =
       if(diff < :math.pow(10, -10) && changes == 2) do
         Gvp.PushSum.Driver.done(self())
-        # IO.puts("here")
         changes
       else
         next_pid = Gvp.Topologies.get_random_neighbour(self())
@@ -34,7 +33,6 @@ defmodule Gvp.PushSum.Node do
         end
       end
 
-    # IO.inspect changes
     {:noreply, {s_new, w_new, new_ratio, changes}}
   end
 end

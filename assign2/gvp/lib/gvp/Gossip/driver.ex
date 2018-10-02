@@ -29,11 +29,9 @@ defmodule Gvp.Gossip.Driver do
 
   def handle_cast({:done, pid}, {node_count, topology, deleted_pids, start_time}) do
     deleted_pids = deleted_pids ++ [pid]
-    # IO.inspect deleted_pids
-    # IO.puts node_count
+
     if(node_count <= 1) do
-      IO.puts ""
-      IO.puts "Time taken:"
+      IO.puts("Time taken:")
       end_time = System.monotonic_time(:millisecond)
       time_taken = end_time - start_time
       IO.inspect(time_taken)

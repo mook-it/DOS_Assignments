@@ -21,19 +21,26 @@ defmodule Gvpbonus.PushSum.Node do
     changes =
       if(diff < :math.pow(10, -10) && changes == 2) do
         Gvpbonus.PushSum.Driver.done(self())
-        # IO.puts("here")
         changes
       else
-
         next_pids = Gvpbonus.Topologies.get_all_neighbours(self())
 
-        [{_ , failed}] = :ets.lookup(:failureCheckUp, "failed")
+        [{_, failed}] = :ets.lookup(:failureCheckUp, "failed")
 
         next_pids_alive = Enum.filter(next_pids, fn x -> !MapSet.member?(failed, x) end)
 
-        next_pid = Enum.random(next_pids_alive)
+        next_pid =
+          if(next_pids_alive == []) do
+            0
+          else
+            Enum.random(next_pids_alive)
+          end
 
-        GenServer.cast(next_pid, {:next, s_new, w_new})
+        if(next_pid != 0) do
+          GenServer.cast(next_pid, {:next, s_new, w_new})
+        else
+          Gvpbonus.PushSum.Driver.done(self())
+        end
 
         if(diff < :math.pow(10, -10)) do
           changes + 1
@@ -42,7 +49,6 @@ defmodule Gvpbonus.PushSum.Node do
         end
       end
 
-    # IO.inspect changes
     {:noreply, {s_new, w_new, new_ratio, changes}}
   end
 end

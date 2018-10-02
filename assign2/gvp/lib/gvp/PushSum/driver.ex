@@ -29,13 +29,11 @@ defmodule Gvp.PushSum.Driver do
 
   def handle_cast({:done, pid}, {node_count, topology, deleted_pids, start_time}) do
     deleted_pids = deleted_pids ++ [pid]
-    # IO.inspect([deleted_pids, node_count])
     next_pids = Gvp.Topologies.get_all_neighbours(pid)
     Enum.each(next_pids, fn next_pid -> GenServer.cast(next_pid, {:next, 0, 0}) end)
 
     if(node_count <= 1) do
-      IO.puts ""
-      IO.puts "Time taken:"
+      IO.puts("Time taken:")
       end_time = System.monotonic_time(:millisecond)
       time_taken = end_time - start_time
       IO.inspect(time_taken)

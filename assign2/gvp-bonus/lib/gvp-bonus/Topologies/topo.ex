@@ -89,7 +89,7 @@ defmodule Gvpbonus.Topo do
           l ++ [Enum.random(l1)]
         end
 
-      topology == "sphere" ->
+      topology == "torus" ->
         rowcnt = round(:math.sqrt(numNodes))
 
         for i <- 1..numNodes do

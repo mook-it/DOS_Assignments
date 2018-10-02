@@ -14,6 +14,3 @@ defmodule Gvpbonus.PushSum.NodeSupervisor do
     _pid
   end
 end
-
-
-
