@@ -23,24 +23,21 @@ defmodule Gvp.Topologies do
     GenServer.call(@me, :get_first)
   end
 
-  # def update(pid, node_count)  do
-  #   GenServer.call(@me, {:update, pid, node_count})
-  # end
+  def get_mid() do
+    GenServer.call(@me, :get_first)
+  end
 
   # SERVER
   def init(:no_args) do
     {:ok, %{}}
   end
 
-  def handle_cast({:initialise_topo, list, topology}, map) do
-    map = Gvp.Topo.get_neighbours(list, topology)
-    IO.inspect map
-    {:noreply, map}
+  def handle_cast({:initialise_topo, list, topology}, _map) do
+    {:noreply, Gvp.Topo.get_neighbours(list, topology)}
   end
 
   def handle_call({:random_neighbour, pid}, _from, map) do
     neighbours = Map.get(map, pid)
-
     random_pid = Enum.random(neighbours)
 
     {:reply, random_pid, map}
@@ -56,29 +53,9 @@ defmodule Gvp.Topologies do
     {:reply, List.first(Map.keys(map)), map}
   end
 
-  # def handle_call({:update, pid, node_count}, _from, map) do
-  #   {:reply, node_count-1,remove(map, pid)}
-  # end
-  #
-  # defp remove(map, pid) do
-  #   map = Map.delete(map, pid)
-  #
-  #   new_lists =
-  #     Enum.map(map, fn entry ->
-  #       {key, list} = entry
-  #       List.delete(list, pid)
-  #     end)
-  #
-  #   pids = Map.keys(map)
-  #   i = length(pids)
-  #
-  #   map =
-  #     Enum.reduce(0..(i - 1), %{}, fn x, acc ->
-  #       Map.put(acc, Enum.at(pids, x), Enum.at(new_lists, x))
-  #     end)
-  #
-  #   IO.puts("item deleted:")
-  #   IO.inspect(pid)
-  #   map
-  # end
+  def handle_call(:get_mid, _from, map) do
+    pids = Map.keys(map)
+    middle_pid = Enum.at(pids, div(length(pids), 2))
+    {:reply, middle_pid , map}
+  end
 end

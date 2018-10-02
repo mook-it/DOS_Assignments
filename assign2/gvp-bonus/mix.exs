@@ -15,8 +15,8 @@ defmodule Gvp.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
-     # mod: {Gvp.Application, {1000,"2D"}}
+      extra_applications: [:logger]
+      # mod: {Gvp.Application, {1000,"2D"}}
     ]
   end
 
