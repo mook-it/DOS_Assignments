@@ -40,7 +40,7 @@ gvp
 
 ## Defining Application architecture
 
-![Alt text](/images/arch.png "Application architecture")
+![Alt text](https://github.com/prafful13/DOS_Projects/blob/master/assign2/images/arch.png "Application architecture")
 
 - There is a main supervisor which supervises 2 modules: Driver and Topologies and a subsupervisor: Node_Supervisor. The strategy used is one_for_all because we want the application (all modules) to restart if any of the modules fail to function.
 - Node_Supervisor supervises numNodes number of Node modules. Strategy used here is one_for_one because we want only the node terminated unintentionally to respawn.
