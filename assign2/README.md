@@ -101,3 +101,23 @@ Time taken:
 ```
 
 We are printing the number of node getting the message and time taken for convergence.
+
+## Questions asked in Problem Statement
+
+#### What is working?
+
+We have implemented all the desired topologies and implemented both the algorithms.
+Furthermore we have implemented a failure model for the bonus task.
+
+#### What is the largest network you managed to deal with for each type of topology and algorithm?
+
+| Topology | Gossip | Push Sum |
+| -------- | ------ | -------- |
+| line     | 10_000 | 500      |
+| impline  | 4_000  | 1_000    |
+| 2D       | 10_000 | 600      |
+| imp2D    | 3_500  | 2_000    |
+| rand2D   | 3_000  | 1_000    |
+| 3D       | 5_000  | 125      |
+| torus    | 10_000 | 600      |
+| full     | 3_500  | 500      |
