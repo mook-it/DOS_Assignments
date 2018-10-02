@@ -22,7 +22,8 @@ defmodule Gvp.PushSum.Driver do
     |> Enum.map(fn i -> Gvp.PushSum.NodeSupervisor.add_node(i) end)
     |> Gvp.Topologies.initialise(topology)
 
-    node = Gvp.Topologies.get_first()
+    # node = Gvp.Topologies.get_first()
+    node = Gvp.Topologies.get_mid()
     GenServer.cast(node, {:next, 0, 0})
     {:noreply, {node_count, topology, deleted_pids, start_time}}
   end

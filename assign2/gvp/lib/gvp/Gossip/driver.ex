@@ -22,7 +22,8 @@ defmodule Gvp.Gossip.Driver do
     |> Enum.map(fn _ -> Gvp.Gossip.NodeSupervisor.add_node() end)
     |> Gvp.Topologies.initialise(topology)
 
-    node = Gvp.Topologies.get_first()
+    # node = Gvp.Topologies.get_first()
+    node = Gvp.Topologies.get_mid()
     GenServer.cast(node, :next)
     {:noreply, {node_count, topology, deleted_pids, start_time}}
   end

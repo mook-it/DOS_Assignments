@@ -23,6 +23,10 @@ defmodule Gvp.Topologies do
     GenServer.call(@me, :get_first)
   end
 
+  def get_mid() do
+    GenServer.call(@me, :get_first)
+  end
+
   # SERVER
   def init(:no_args) do
     {:ok, %{}}
@@ -47,5 +51,11 @@ defmodule Gvp.Topologies do
 
   def handle_call(:get_first, _from, map) do
     {:reply, List.first(Map.keys(map)), map}
+  end
+
+  def handle_call(:get_mid, _from, map) do
+    pids = Map.keys(map)
+    middle_pid = Enum.at(pids, div(length(pids), 2))
+    {:reply, middle_pid , map}
   end
 end
