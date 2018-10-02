@@ -61,9 +61,9 @@ defmodule Gvpbonus.PushSum.Driver do
     [{_ , visited}] = :ets.lookup(:failureCheckUp, "visited")
     node_count = MapSet.size(visited)
 
-                            [{_ , failed}] = :ets.lookup(:failureCheckUp, "failed")
+                            #[{_ , failed}] = :ets.lookup(:failureCheckUp, "failed")
 
-                            IO.inspect(failed)
+                            #IO.inspect(failed)
     #IO.puts node_count
     GenServer.cast(node, {:next, 0, 0})
     {:noreply, {node_count, topology, deleted_pids}}

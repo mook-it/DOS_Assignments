@@ -34,7 +34,7 @@ defmodule Gvpbonus.Topologies do
 
   def handle_cast({:initialise_topo, list, topology}, map) do
     map = Gvpbonus.Topo.get_neighbours(list, topology)
-    IO.inspect map
+    #IO.inspect map
     {:noreply, map}
   end
 
