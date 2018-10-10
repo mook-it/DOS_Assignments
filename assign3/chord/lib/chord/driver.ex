@@ -30,37 +30,41 @@ defmodule Chord.Driver do
     {:ok, first_node} = Enum.fetch(node_set, 0)
     pid = Chord.NodeSupervisor.add_node(first_node)
     {:ok} = Chord.Node.create_chord_ring(first_node)
-    GenServer.cast(:"node_#{first_node}", {:stabilize})
-    # GenServer.cast(:"node_#{first_node}", {:fix_fingers})
+    #GenServer.cast(:"node_#{first_node}", {:stabilize})
+    GenServer.cast(:"node_#{first_node}", {:fix_fingers})
     ring_length = ring_length + 1
     # IO.inspect([first_node, pid])
 
-    GenServer.cast(:"node_#{first_node}", {:print_table})
+    #GenServer.cast(:"node_#{first_node}", {:print_table})
 
-    # Enum.each(
-    #   1..(numNodes - 1),
-    #   fn x ->
-    #     {:ok, node_id} = Enum.fetch(node_set, x)
-    #     pid2 = Chord.NodeSupervisor.add_node(node_id)
-    #     Chord.Node.join_new_node(node_id, first_node)
-    #     GenServer.cast(:"node_#{node_id}", {:fix_fingers})
-    #     ring_length = ring_length + 1
-    #     #IO.inspect(pid2)
-    #     #GenServer.cast(:"node_#{node_id}", {:print_table})
-    #   end
-    # )
+    Enum.each(
+      1..(numNodes - 1),
+      fn x ->
+        {:ok, node_id} = Enum.fetch(node_set, x)
+        pid2 = Chord.NodeSupervisor.add_node(node_id)
+        Chord.Node.join_new_node(node_id, first_node)
+        GenServer.cast(:"node_#{node_id}", {:fix_fingers})
+        ring_length = ring_length + 1
+        #IO.inspect(pid2)
+        Process.sleep(5000)
+        #GenServer.cast(:"node_#{node_id}", {:print_table})
+      end
+    )
 
-    {:ok, node_id} = Enum.fetch(node_set, 1)
-    pid2 = Chord.NodeSupervisor.add_node(node_id)
-    Chord.Node.join_new_node(node_id, first_node)
-    # GenServer.cast(:"node_#{node_id}", {:fix_fingers})
-    ring_length = ring_length + 1
-
-    {:ok, node_id} = Enum.fetch(node_set, 2)
-    pid3 = Chord.NodeSupervisor.add_node(node_id)
-    Chord.Node.join_new_node(node_id, first_node)
-    # GenServer.cast(:"node_#{node_id}", {:fix_fingers})
-    ring_length = ring_length + 1
+    # {:ok, node_id} = Enum.fetch(node_set, 1)
+    # pid2 = Chord.NodeSupervisor.add_node(node_id)
+    # Chord.Node.join_new_node(node_id, first_node)
+    # # GenServer.cast(:"node_#{node_id}", {:fix_fingers})
+    # ring_length = ring_length + 1
+    #
+    #
+    #
+    #
+    # {:ok, node_id} = Enum.fetch(node_set, 2)
+    # pid3 = Chord.NodeSupervisor.add_node(node_id)
+    # Chord.Node.join_new_node(node_id, first_node)
+    # # GenServer.cast(:"node_#{node_id}", {:fix_fingers})
+    # ring_length = ring_length + 1
 
     Process.sleep(10000)
     GenServer.cast(:"node_#{first_node}", {:print_table})

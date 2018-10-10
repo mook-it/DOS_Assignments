@@ -20,6 +20,11 @@ defmodule Chord.Node do
     {:ok, {0, 0, %{}}}
   end
 
+  def handle_call({:update_successor, node}, _from, {self_node_id, predecessor, finger_table}) do
+    {_,finger_table} = Map.get_and_update(finger_table, 0, fn x -> {x, node} end)
+    {:reply, {:ok}, {self_node_id, predecessor, finger_table}}
+  end
+
   def handle_call({:create, new_node}, _from, {self_node_id, predecessor, finger_table}) do
     predecessor = nil
     self_node_id = new_node
@@ -37,6 +42,13 @@ defmodule Chord.Node do
     IO.inspect(self_node_id)
 
     {succ} = GenServer.call(:"node_#{existing_node}", {:find_successor, self_node_id})
+
+    if(existing_node == succ) do
+      IO.puts "inside this"
+      GenServer.call(:"node_#{existing_node}", {:update_successor, self_node_id})
+      GenServer.cast(:"node_#{existing_node}", {:stabilize})
+    end
+
     IO.inspect([self_node_id, "succ", succ])
     finger_table = Map.put(finger_table, 0, succ)
 
@@ -45,8 +57,8 @@ defmodule Chord.Node do
   end
 
   def handle_call({:find_successor, key}, _from, {self_node_id, predecessor, finger_table}) do
-    IO.puts("in find")
-    IO.inspect(finger_table)
+    #IO.puts("in find")
+    #IO.inspect(finger_table)
 
     resulting_node =
       if(key > self_node_id && key <= Map.get(finger_table, 0)) do
@@ -70,6 +82,7 @@ defmodule Chord.Node do
 
     if(successor == self_node_id) do
     else
+      IO.puts(self_node_id)
       {x} = GenServer.call(:"node_#{successor}", {:find_predecessor})
       # IO.inspect([self_node_id, successor])
 
@@ -82,13 +95,13 @@ defmodule Chord.Node do
 
       IO.inspect([self_node_id, "succ", successor])
 
-      Map.get_and_update(finger_table, 0, fn x -> {x, successor} end)
+      {_,finger_table} = Map.get_and_update(finger_table, 0, fn x -> {x, successor} end)
       GenServer.cast(:"node_#{successor}", {:notify, self_node_id})
     end
 
-      Process.sleep(100)
-      GenServer.cast(:"node_#{self_node_id}", {:stabilize})
-      {:noreply, {self_node_id, predecessor, finger_table}}
+    Process.sleep(100)
+    GenServer.cast(:"node_#{self_node_id}", {:stabilize})
+    {:noreply, {self_node_id, predecessor, finger_table}}
   end
 
   def handle_cast({:fix_fingers}, {self_node_id, predecessor, finger_table}) do
@@ -101,7 +114,7 @@ defmodule Chord.Node do
       updated_successor =
         find_successor_self(self_node_id + :math.pow(2, x - 1), finger_table, self_node_id)
 
-      Map.get_and_update(finger_table, x - 1, fn x -> {x, updated_successor} end)
+      {_,finger_table} = Map.get_and_update(finger_table, x-1, fn x -> {x,updated_successor } end)
     end)
 
     # IO.inspect(["fingering", finger_table])
@@ -115,7 +128,7 @@ defmodule Chord.Node do
   end
 
   def handle_cast({:notify, possible_predecessor}, {self_node_id, predecessor, finger_table}) do
-    IO.puts("in notify")
+    #IO.puts("in notify")
 
     predecessor =
       if(
@@ -128,8 +141,8 @@ defmodule Chord.Node do
         predecessor
       end
 
-    IO.inspect([self_node_id, "poss", possible_predecessor])
-    IO.inspect(predecessor)
+    #IO.inspect([self_node_id, "poss", possible_predecessor])
+    #IO.inspect(predecessor)
 
     # Map.get_and_update(finger_table, 0, fn x -> {x, possible_predecessor})
 
