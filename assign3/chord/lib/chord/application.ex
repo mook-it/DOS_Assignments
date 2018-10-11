@@ -3,10 +3,9 @@ defmodule Chord.Application do
 
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Chord.Worker.start_link(arg)
-      # {Chord.Worker, arg},
       Chord.NodeSupervisor,
-      {Chord.Driver, {20, 25, 0}}
+      Chord.Stabilize,
+      {Chord.Driver, {1000, 25, 0}}
     ]
 
     opts = [strategy: :one_for_one, name: Chord.Supervisor]

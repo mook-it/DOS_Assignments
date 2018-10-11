@@ -3,7 +3,6 @@ defmodule Chord.Node do
 
   # API
   def start_link(node_id) do
-    # IO.inspect node_id
     GenServer.start_link(__MODULE__, :no_args, name: :"node_#{node_id}")
   end
 
@@ -56,18 +55,14 @@ defmodule Chord.Node do
         _from,
         {self_node_id, predecessor, finger_table}
       ) do
-    IO.inspect([predecessor, possible_predecessor, self_node_id])
-
     predecessor =
       if(
         predecessor == nil ||
           (possible_predecessor > predecessor && possible_predecessor < self_node_id) ||
           (predecessor > self_node_id && possible_predecessor < predecessor)
       ) do
-        IO.inspect(possible_predecessor)
         possible_predecessor
       else
-        IO.puts("hey")
         predecessor
       end
 
@@ -77,28 +72,19 @@ defmodule Chord.Node do
   def handle_cast(:stabilize, {self_node_id, predecessor, finger_table}) do
     successor = Map.get(finger_table, 0)
     x = GenServer.call(:"node_#{successor}", :get_predecessor)
-    # IO.inspect(["in_stab", x, self_node_id])
-    # IO.puts "here"
-
-    if(self_node_id == 100_000_000_000_000_000_000_000_000) do
-      IO.inspect(["lawda", self_node_id, x, successor])
-    end
 
     if(x != self_node_id) do
       successor =
         if((x > self_node_id && x < successor) || (self_node_id > successor && x < successor)) do
           x
         else
-          IO.inspect(["in else", x, self_node_id, successor])
           successor
         end
 
       {:ok} = GenServer.call(:"node_#{successor}", {:notify, self_node_id})
       {_, finger_table} = Map.get_and_update(finger_table, 0, fn x -> {x, successor} end)
-      IO.inspect([self_node_id, finger_table])
       {:noreply, {self_node_id, predecessor, finger_table}}
     else
-      IO.inspect([self_node_id, finger_table])
       {:noreply, {self_node_id, predecessor, finger_table}}
     end
   end
@@ -110,12 +96,9 @@ defmodule Chord.Node do
       ) do
     self_node_id = new_node
     successor = GenServer.call(:"node_#{existing_node}", {:find_successor, self_node_id})
-    IO.puts("join")
-    IO.inspect([self_node_id, successor])
     finger_table = Map.put_new(finger_table, 0, successor)
     predecessor = nil
     {:ok} = GenServer.call(:"node_#{successor}", {:notify, self_node_id})
-    IO.inspect(GenServer.call(:"node_#{successor}", :get_predecessor))
     {:reply, {:ok}, {self_node_id, predecessor, finger_table}}
   end
 
