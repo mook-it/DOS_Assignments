@@ -133,7 +133,7 @@ defmodule Chord.Node do
 
     successor_for_key =
       if(
-        (key > self_node_id && key <= successor) || (self_node_id > successor && key < successor)
+        (key > self_node_id && key <= successor) || (self_node_id > successor && key <= successor)
       ) do
         successor
       else
@@ -169,7 +169,7 @@ defmodule Chord.Node do
     else
       key = self_node_id + :math.pow(2, i - 1)
       succ = find_successor_func(finger_table, key, self_node_id)
-      # max_pred = if(self_node_id == @max) do predecessor else GenServer.call(:"node_#{@max}", :get_predecessor) end
+      # max_pred = GenServer.call(:"node_#{@max}", :get_predecessor)
       # succ = if(succ == @max && self_node_id != max_pred) do max_pred else succ end
       {_, finger_table} =
         if(Map.has_key?(finger_table, i - 1) == true) do
