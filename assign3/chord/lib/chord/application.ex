@@ -5,7 +5,8 @@ defmodule Chord.Application do
     children = [
       Chord.NodeSupervisor,
       Chord.Stabilize,
-      {Chord.Driver, {1000, 25, 0}}
+      Chord.FixFingers,
+      {Chord.Driver, {100, 25, 0}}
     ]
 
     opts = [strategy: :one_for_one, name: Chord.Supervisor]

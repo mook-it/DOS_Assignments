@@ -9,8 +9,8 @@ defmodule Chord.NodeSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def add_node(node_id) do
-    {:ok, _pid} = DynamicSupervisor.start_child(@me, {Chord.Node, node_id})
+  def add_node(node_id, m) do
+    {:ok, _pid} = DynamicSupervisor.start_child(@me, {Chord.Node, {node_id, m}})
     _pid
   end
 end

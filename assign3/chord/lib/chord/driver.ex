@@ -15,11 +15,11 @@ defmodule Chord.Driver do
   # SERVER
   def init({numNodes, numRequests, start_time}) do
     Process.send_after(self(), :kickoff, 0)
-    {:ok, {numNodes, numRequests, 12, 0, start_time}}
+    {:ok, {numNodes, numRequests, 8, 0, start_time}}
   end
 
   def handle_call(:get_m, _from, {numNodes, numRequests, m, ring_length, start_time}) do
-    {:reply, {m}, {numNodes, numRequests, m, ring_length, start_time}}
+    {:reply, m, {numNodes, numRequests, m, ring_length, start_time}}
   end
 
   def handle_info(:kickoff, {numNodes, numRequests, m, ring_length, start_time}) do
@@ -27,23 +27,24 @@ defmodule Chord.Driver do
     max = :math.pow(2, m) |> round
     node_set = fill_map(set, numNodes, max)
     node_set = Enum.shuffle(node_set)
-    # node_set = [10, 20, 15, 35, 5, 3, 4]
-    # numNodes = 7
+    node_set = [10, 20, 15, 35, 5, 3, 4]
+    numNodes = 7
     IO.inspect(node_set)
     {:ok, first_node} = Enum.fetch(node_set, 0)
-    _pid = Chord.NodeSupervisor.add_node(first_node)
-    _pid2 = Chord.NodeSupervisor.add_node(@max)
+    _pid = Chord.NodeSupervisor.add_node(first_node, m)
+    _pid2 = Chord.NodeSupervisor.add_node(@max, m)
     {:ok} = Chord.Node.create_chord_ring(first_node, @max)
 
     Chord.Stabilize.start_stabilize()
+    Chord.FixFingers.start_fix_fingers()
     ring_length = ring_length + 1
 
     Enum.each(
       1..(numNodes - 1),
       fn x ->
         {:ok, node_id} = Enum.fetch(node_set, x)
-        IO.puts("adding node_#{node_id}")
-        _pid = Chord.NodeSupervisor.add_node(node_id)
+        # IO.puts("adding node_#{node_id}")
+        _pid = Chord.NodeSupervisor.add_node(node_id, m)
         {:ok} = Chord.Node.join_new_node(node_id, first_node)
         ring_length = ring_length + 1
         Process.sleep(40)
@@ -74,8 +75,12 @@ defmodule Chord.Driver do
         {:ok, node} = Enum.fetch(node_set, i)
         IO.inspect(["pred_for_#{node}", GenServer.call(:"node_#{node}", :get_predecessor)])
         IO.inspect(["succ_for_#{node}", GenServer.call(:"node_#{node}", :get_successor)])
+        IO.inspect(GenServer.call(:"node_#{node}", :get_finger_table))
       end)
 
+      [head | tail] = node_set
+
+      IO.inspect GenServer.call(:"node_#{head}", {:find_successor, 57})
       System.halt(0)
     else
       decider(node_set, numNodes)
