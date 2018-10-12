@@ -15,14 +15,14 @@ defmodule Chord.Driver do
   # SERVER
   def init({numNodes, numRequests, start_time}) do
     Process.send_after(self(), :kickoff, 0)
-    {:ok, {numNodes, numRequests, 12, 0, start_time}}
+    {:ok, {numNodes, numRequests, 30, start_time}}
   end
 
-  def handle_call(:get_m, _from, {numNodes, numRequests, m, ring_length, start_time}) do
-    {:reply, {m}, {numNodes, numRequests, m, ring_length, start_time}}
+  def handle_call(:get_m, _from, {numNodes, numRequests, m, start_time}) do
+    {:reply, m, {numNodes, numRequests, m, start_time}}
   end
 
-  def handle_info(:kickoff, {numNodes, numRequests, m, ring_length, start_time}) do
+  def handle_info(:kickoff, {numNodes, numRequests, m, start_time}) do
     set = MapSet.new()
     max = :math.pow(2, m) |> round
     node_set = fill_map(set, numNodes, max)
@@ -31,31 +31,30 @@ defmodule Chord.Driver do
     # numNodes = 7
     IO.inspect(node_set)
     {:ok, first_node} = Enum.fetch(node_set, 0)
-    _pid = Chord.NodeSupervisor.add_node(first_node)
-    _pid2 = Chord.NodeSupervisor.add_node(@max)
+    _pid = Chord.NodeSupervisor.add_node(first_node, m)
+    _pid2 = Chord.NodeSupervisor.add_node(@max, m)
     {:ok} = Chord.Node.create_chord_ring(first_node, @max)
 
     Chord.Stabilize.start_stabilize()
-    ring_length = ring_length + 1
+    Chord.FixFingers.start_fix_fingers()
 
     Enum.each(
       1..(numNodes - 1),
       fn x ->
         {:ok, node_id} = Enum.fetch(node_set, x)
-        IO.puts("adding node_#{node_id}")
-        _pid = Chord.NodeSupervisor.add_node(node_id)
+        # IO.puts("adding node_#{node_id}")
+        _pid = Chord.NodeSupervisor.add_node(node_id, m)
         {:ok} = Chord.Node.join_new_node(node_id, first_node)
-        ring_length = ring_length + 1
         Process.sleep(40)
       end
     )
 
-    decider(node_set, numNodes)
+    decider(node_set, numNodes,max, numRequests)
 
-    {:noreply, {numNodes, numRequests, m, ring_length, start_time}}
+    {:noreply, {numNodes, numRequests, m, start_time}}
   end
 
-  defp decider(node_set, numNodes) do
+  defp decider(node_set, numNodes,max, numRequests) do
     list =
       Enum.map(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
@@ -68,17 +67,29 @@ defmodule Chord.Driver do
     IO.inspect(diff)
 
     if(diff == []) do
-      Process.sleep(1000)
+      # Process.sleep(1000)
 
       Enum.each(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
         IO.inspect(["pred_for_#{node}", GenServer.call(:"node_#{node}", :get_predecessor)])
         IO.inspect(["succ_for_#{node}", GenServer.call(:"node_#{node}", :get_successor)])
+        IO.inspect(GenServer.call(:"node_#{node}", :get_finger_table))
+      end)
+
+      Enum.each(node_set, fn node ->
+        random_keys = MapSet.new()
+        random_keys = fill_map(random_keys, numRequests, max)
+        random_keys = Enum.shuffle(random_keys)
+        IO.inspect [node, random_keys]
+        Enum.each(random_keys, fn key ->
+          IO.inspect GenServer.call(:"node_#{node}", {:find_successor, key})
+        end)
+
       end)
 
       System.halt(0)
     else
-      decider(node_set, numNodes)
+      decider(node_set, numNodes, max,numRequests)
     end
   end
 

@@ -5,6 +5,7 @@ defmodule Chord.Application do
     children = [
       Chord.NodeSupervisor,
       Chord.Stabilize,
+      Chord.FixFingers,
       {Chord.Driver, {1000, 25, 0}}
     ]
 
