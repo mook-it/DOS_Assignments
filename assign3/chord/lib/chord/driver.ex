@@ -36,25 +36,23 @@ defmodule Chord.Driver do
     {:ok} = Chord.Node.create_chord_ring(first_node, @max)
 
     Chord.Stabilize.start_stabilize()
-    Chord.FixFingers.start_fix_fingers()
 
     Enum.each(
       1..(numNodes - 1),
       fn x ->
         {:ok, node_id} = Enum.fetch(node_set, x)
-        # IO.puts("adding node_#{node_id}")
         _pid = Chord.NodeSupervisor.add_node(node_id, m)
         {:ok} = Chord.Node.join_new_node(node_id, first_node)
-        Process.sleep(40)
+        Process.sleep(20)
       end
     )
 
-    decider(node_set, numNodes,max, numRequests)
+    decider(node_set, numNodes, max, numRequests)
 
     {:noreply, {numNodes, numRequests, m, start_time}}
   end
 
-  defp decider(node_set, numNodes,max, numRequests) do
+  defp decider(node_set, numNodes, max, numRequests) do
     list =
       Enum.map(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
@@ -67,8 +65,6 @@ defmodule Chord.Driver do
     IO.inspect(diff)
 
     if(diff == []) do
-      # Process.sleep(1000)
-
       Enum.each(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
         IO.inspect(["pred_for_#{node}", GenServer.call(:"node_#{node}", :get_predecessor)])
@@ -76,20 +72,34 @@ defmodule Chord.Driver do
         IO.inspect(GenServer.call(:"node_#{node}", :get_finger_table))
       end)
 
-      Enum.each(node_set, fn node ->
+      sum = Enum.reduce(node_set,0, fn node,acc ->
         random_keys = MapSet.new()
         random_keys = fill_map(random_keys, numRequests, max)
         random_keys = Enum.shuffle(random_keys)
-        IO.inspect [node, random_keys]
-        Enum.each(random_keys, fn key ->
-          IO.inspect GenServer.call(:"node_#{node}", {:find_successor, key})
+        IO.inspect([node, random_keys])
+
+        sum1 = Enum.reduce(random_keys,0, fn key, acc1 ->
+          {succ, hops} = GenServer.call(:"node_#{node}", {:find_successor_lookup, {key, 0}})
+
+          succ =
+            if(succ == @max) do
+              GenServer.call(:"node_#{@max}", :get_successor)
+            else
+              succ
+            end
+
+          IO.inspect([succ, hops])
+          acc1 + hops
         end)
-
+        acc + sum1
       end)
-
+      IO.inspect sum
+      IO.inspect ["avg number of hops = ",sum/(numNodes*numRequests)]
+      IO.inspect ["log2(#{numNodes}) = ",:math.log2(numNodes)]
+      IO.inspect ["log10(#{numNodes}) = ",:math.log10(numNodes)]
       System.halt(0)
     else
-      decider(node_set, numNodes, max,numRequests)
+      decider(node_set, numNodes, max, numRequests)
     end
   end
 

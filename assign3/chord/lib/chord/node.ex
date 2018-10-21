@@ -2,7 +2,6 @@ defmodule Chord.Node do
   use GenServer, restart: :transient
   @max 100_000_000_000_000_000_000_000_000
 
-
   # API
   def start_link({node_id, m}) do
     GenServer.start_link(__MODULE__, m, name: :"node_#{node_id}")
@@ -109,7 +108,6 @@ defmodule Chord.Node do
   end
 
   defp closest_preceding_node(key, finger_table, self_node_id) do
-          # IO.inspect [self_node_id, finger_table]
     keys = Map.keys(finger_table)
     size_of_table = Enum.count(keys)
     prec_node = closest_preceding_node_helper(size_of_table, finger_table, key, self_node_id)
@@ -120,6 +118,7 @@ defmodule Chord.Node do
       Map.get(finger_table, 0)
     else
       table_entry = Map.get(finger_table, size_of_table - 1)
+
       if((table_entry > self_node_id && table_entry < key) || key < self_node_id) do
         table_entry
       else
@@ -138,12 +137,36 @@ defmodule Chord.Node do
         successor
       else
         n_dash = closest_preceding_node(key, finger_table, self_node_id)
-        if(key == 1) do IO.puts "+1" end
+
+        if(key == 1) do
+          IO.puts("+1")
+        end
+
         GenServer.call(:"node_#{n_dash}", {:find_successor, key})
       end
-      # max_succ = if(self_node_id == @max) do Map.get(finger_table, 0) else GenServer.call(:"node_#{@max}", :get_successor) end
-      # successor_for_key = if(successor_for_key == @max) do max_succ else successor_for_key end
+
     {:reply, successor_for_key, {self_node_id, predecessor, finger_table, m}}
+  end
+
+  def handle_call(
+        {:find_successor_lookup, {key, hops}},
+        _from,
+        {self_node_id, predecessor, finger_table, m}
+      ) do
+    successor = Map.get(finger_table, 0)
+
+    {successor_for_key, final_hops} =
+      if(
+        (key > self_node_id && key <= successor) || (self_node_id > successor && key <= successor)
+      ) do
+        {successor, hops}
+      else
+        n_dash = closest_preceding_node(key, finger_table, self_node_id)
+
+        GenServer.call(:"node_#{n_dash}", {:find_successor_lookup, {key, hops + 1}})
+      end
+
+    {:reply, {successor_for_key, final_hops}, {self_node_id, predecessor, finger_table, m}}
   end
 
   defp find_successor_func(finger_table, key, self_node_id) do
@@ -161,21 +184,17 @@ defmodule Chord.Node do
   end
 
   def fix_fingers_helper(i, finger_table, self_node_id, m, predecessor) do
-    # IO.inspect([i, m])
-
     if(i > m) do
-      # IO.puts("ey")
       finger_table
     else
       key = self_node_id + :math.pow(2, i - 1)
       succ = find_successor_func(finger_table, key, self_node_id)
-      # max_pred = GenServer.call(:"node_#{@max}", :get_predecessor)
-      # succ = if(succ == @max && self_node_id != max_pred) do max_pred else succ end
+
       {_, finger_table} =
         if(Map.has_key?(finger_table, i - 1) == true) do
           Map.get_and_update(finger_table, i - 1, fn curr -> {curr, succ} end)
         else
-          {1,finger_table}
+          {1, finger_table}
         end
 
       finger_table =
