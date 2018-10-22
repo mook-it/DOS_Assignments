@@ -43,7 +43,7 @@ defmodule Chord.Driver do
         {:ok, node_id} = Enum.fetch(node_set, x)
         _pid = Chord.NodeSupervisor.add_node(node_id, m)
         {:ok} = Chord.Node.join_new_node(node_id, first_node)
-        Process.sleep(20)
+        Process.sleep(25)
       end
     )
 
@@ -62,9 +62,10 @@ defmodule Chord.Driver do
     list = list ++ [GenServer.call(:"node_#{@max}", :get_predecessor)]
 
     diff = node_set -- list
-    IO.inspect(diff)
+    IO.inspect(Enum.count(diff))
 
     if(diff == []) do
+      Process.sleep(100)
       Enum.each(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
         IO.inspect(["pred_for_#{node}", GenServer.call(:"node_#{node}", :get_predecessor)])
