@@ -43,7 +43,7 @@ defmodule Chord.Driver do
         {:ok, node_id} = Enum.fetch(node_set, x)
         _pid = Chord.NodeSupervisor.add_node(node_id, m)
         {:ok} = Chord.Node.join_new_node(node_id, first_node)
-        Process.sleep(20)
+        Process.sleep(25)
       end
     )
 
