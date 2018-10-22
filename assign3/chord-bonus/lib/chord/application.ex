@@ -1,11 +1,11 @@
 defmodule Chord.Application do
   use Application
 
-  def start(_type, _args) do
+  def start(_type, {numNodes, numRequests, percentage}) do
     children = [
       Chord.NodeSupervisor,
       Chord.Stabilize,
-      {Chord.Driver, {1000, 25, 0}}
+      {Chord.Driver, {numNodes, numRequests, percentage}}
     ]
 
     opts = [strategy: :one_for_all, name: Chord.Supervisor]

@@ -74,7 +74,7 @@ defmodule Chord.Node do
     {:reply, {:ok}, {self_node_id, predecessor, finger_table, m}}
   end
 
-  def handle_call(:stabilize, _from, {self_node_id, predecessor, finger_table, m}) do
+  def handle_cast(:stabilize, {self_node_id, predecessor, finger_table, m}) do
     successor = Map.get(finger_table, 0)
     x = GenServer.call(:"node_#{successor}", :get_predecessor)
 
@@ -88,9 +88,9 @@ defmodule Chord.Node do
 
       {:ok} = GenServer.call(:"node_#{successor}", {:notify, self_node_id})
       {_, finger_table} = Map.get_and_update(finger_table, 0, fn x -> {x, successor} end)
-      {:reply, {:ok}, {self_node_id, predecessor, finger_table, m}}
+      {:noreply, {self_node_id, predecessor, finger_table, m}}
     else
-      {:reply, {:ok}, {self_node_id, predecessor, finger_table, m}}
+      {:noreply, {self_node_id, predecessor, finger_table, m}}
     end
   end
 
@@ -137,36 +137,33 @@ defmodule Chord.Node do
         successor
       else
         n_dash = closest_preceding_node(key, finger_table, self_node_id)
-
-        if(key == 1) do
-          IO.puts("+1")
-        end
-
         GenServer.call(:"node_#{n_dash}", {:find_successor, key})
       end
 
     {:reply, successor_for_key, {self_node_id, predecessor, finger_table, m}}
   end
 
-  def handle_call(
+  def handle_cast(
         {:find_successor_lookup, {key, hops}},
-        _from,
         {self_node_id, predecessor, finger_table, m}
       ) do
     successor = Map.get(finger_table, 0)
 
-    {successor_for_key, final_hops} =
-      if(
-        (key > self_node_id && key <= successor) || (self_node_id > successor && key <= successor)
-      ) do
-        {successor, hops}
-      else
-        n_dash = closest_preceding_node(key, finger_table, self_node_id)
+    if(
+      (key > self_node_id && key <= successor) || (self_node_id > successor && key <= successor)
+    ) do
+      [{_, req_count}] = :ets.lookup(:chord, "req_count")
+      req_count = req_count - 1
+      :ets.insert(:chord, {"req_count", req_count})
+    else
+      n_dash = closest_preceding_node(key, finger_table, self_node_id)
+      [{_, hops_count}] = :ets.lookup(:chord, "hops_count")
+      hops_count = hops_count + 1
+      :ets.insert(:chord, {"hops_count", hops_count})
+      GenServer.cast(:"node_#{n_dash}", {:find_successor_lookup, {key, hops + 1}})
+    end
 
-        GenServer.call(:"node_#{n_dash}", {:find_successor_lookup, {key, hops + 1}})
-      end
-
-    {:reply, {successor_for_key, final_hops}, {self_node_id, predecessor, finger_table, m}}
+    {:noreply, {self_node_id, predecessor, finger_table, m}}
   end
 
   defp find_successor_func(finger_table, key, self_node_id) do
@@ -208,12 +205,12 @@ defmodule Chord.Node do
     end
   end
 
-  def handle_call(:fix_fingers, _from, {self_node_id, predecessor, finger_table, m}) do
+  def handle_cast(:fix_fingers, {self_node_id, predecessor, finger_table, m}) do
     if(self_node_id != @max) do
       finger_table = fix_fingers_helper(1, finger_table, self_node_id, m, predecessor)
-      {:reply, {:ok}, {self_node_id, predecessor, finger_table, m}}
+      {:noreply, {self_node_id, predecessor, finger_table, m}}
     else
-      {:reply, {:ok}, {self_node_id, predecessor, finger_table, m}}
+      {:noreply, {self_node_id, predecessor, finger_table, m}}
     end
   end
 end

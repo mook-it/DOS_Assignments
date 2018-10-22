@@ -13,16 +13,16 @@ defmodule Chord.Driver do
   end
 
   # SERVER
-  def init({numNodes, numRequests, start_time}) do
+  def init({numNodes, numRequests, percentage}) do
     Process.send_after(self(), :kickoff, 0)
-    {:ok, {numNodes, numRequests, 30, start_time}}
+    {:ok, {numNodes, numRequests, 20, percentage}}
   end
 
-  def handle_call(:get_m, _from, {numNodes, numRequests, m, start_time}) do
-    {:reply, m, {numNodes, numRequests, m, start_time}}
+  def handle_call(:get_m, _from, {numNodes, numRequests, m, percentage}) do
+    {:reply, m, {numNodes, numRequests, m, percentage}}
   end
 
-  def handle_info(:kickoff, {numNodes, numRequests, m, start_time}) do
+  def handle_info(:kickoff, {numNodes, numRequests, m, percentage}) do
     set = MapSet.new()
     max = :math.pow(2, m) |> round
     node_set = fill_map(set, numNodes, max)
@@ -30,10 +30,14 @@ defmodule Chord.Driver do
 
     :ets.new(:chord, [:set, :public, :named_table])
     :ets.insert(:chord, {"failed_nodes", []})
+    :ets.insert(:chord, {"hops_count", 0})
+    :ets.insert(:chord, {"req_count", 0})
+    hash_list = Enum.reduce(1..(numNodes*numRequests), [], fn _, hash_list ->
+      hash_list = hash_list ++ [:crypto.hash(:sha, "i") |> Base.encode16 |> String.downcase]
+    end)
 
-    # node_set = [10, 20, 15, 35, 5, 3, 4]
-    # numNodes = 7
-    # IO.inspect(node_set)
+    :ets.insert(:chord, {"hash_list", hash_list})
+
     {:ok, first_node} = Enum.fetch(node_set, 0)
     _pid = Chord.NodeSupervisor.add_node(first_node, m)
     _pid2 = Chord.NodeSupervisor.add_node(@max, m)
@@ -51,12 +55,12 @@ defmodule Chord.Driver do
       end
     )
 
-    decider(node_set, numNodes, max, numRequests)
+    decider(node_set, numNodes, max, numRequests, percentage)
 
-    {:noreply, {numNodes, numRequests, m, start_time}}
+    {:noreply, {numNodes, numRequests, m, percentage}}
   end
 
-  defp decider(node_set, numNodes, max, numRequests) do
+  defp decider(node_set, numNodes, max, numRequests, percentage) do
     list =
       Enum.map(0..(numNodes - 1), fn i ->
         {:ok, node} = Enum.fetch(node_set, i)
@@ -66,95 +70,90 @@ defmodule Chord.Driver do
     list = list ++ [GenServer.call(:"node_#{@max}", :get_predecessor)]
 
     diff = node_set -- list
-    # IO.inspect(Enum.count(diff))
 
     if(diff == []) do
-      Process.sleep(100)
+      Enum.each(node_set, fn node ->
+        random_keys = MapSet.new()
+        random_keys = fill_map(random_keys, numRequests, max)
+        random_keys = Enum.shuffle(random_keys)
 
-      sum =
-        Enum.reduce(node_set, 0, fn node, acc ->
-          random_keys = MapSet.new()
-          random_keys = fill_map(random_keys, numRequests, max)
-          random_keys = Enum.shuffle(random_keys)
-          # IO.inspect([node, random_keys])
-
-          sum1 =
-            Enum.reduce(random_keys, 0, fn key, acc1 ->
-              {succ, hops} = GenServer.call(:"node_#{node}", {:find_successor_lookup, {key, 0}})
-
-              succ =
-                if(succ == @max) do
-                  GenServer.call(:"node_#{@max}", :get_successor)
-                else
-                  succ
-                end
-              acc1 + hops
-            end)
-
-          acc + sum1
+        Enum.each(random_keys, fn key ->
+          [{_, req_count}] = :ets.lookup(:chord, "req_count")
+          req_count = req_count + 1
+          :ets.insert(:chord, {"req_count", req_count})
+          GenServer.cast(:"node_#{node}", {:find_successor_lookup, {key, 0}})
+          Process.sleep(1)
         end)
+      end)
 
+      decider2(numNodes, numRequests, max, node_set, percentage)
+    else
+      decider(node_set, numNodes, max, numRequests, percentage)
+    end
+  end
+
+  defp decider2(numNodes, numRequests, max, node_set, percentage) do
+    [{_, req_count}] = :ets.lookup(:chord, "req_count")
+
+    if(req_count == 0) do
+      [{_, sum}] = :ets.lookup(:chord, "hops_count")
       IO.inspect(["avg number of hops = ", sum / (numNodes * numRequests)])
       IO.inspect(["log2(#{numNodes}) = ", :math.log2(numNodes)])
       IO.inspect(["log10(#{numNodes}) = ", :math.log10(numNodes)])
-
-      node_deletion(20, node_set, numNodes, numRequests, max)
+      :ets.insert(:chord, {"hops_count", 0})
+      node_deletion(percentage, node_set, numNodes, numRequests, max)
     else
-      decider(node_set, numNodes, max, numRequests)
+      decider2(numNodes, numRequests, max, node_set, percentage)
     end
   end
 
   defp node_deletion(percentage, node_set, numNodes, numRequests, max) do
     count = percentage / 100 * numNodes
     positions = MapSet.new()
-    positions_to_delete = fill_map(positions, count, numNodes)
+    positions_to_delete = fill_map(positions, count, numNodes-1)
 
     deleted_nodes =
       Enum.reduce(positions_to_delete, [], fn i, deleted_nodes ->
         {:ok, node} = Enum.fetch(node_set, i)
         GenServer.call(:"node_#{node}", :normal_departure)
-        # GenServer.stop(:"node_#{node}", :normal)
         deleted_nodes ++ [node]
       end)
 
     node_set = node_set -- deleted_nodes
 
-    # IO.inspect(Enum.count(node_set))
-
     :ets.insert(:chord, {"failed_nodes", deleted_nodes})
+    Process.sleep(1000)
 
-    Process.sleep(500)
+    Enum.each(node_set, fn node ->
+      random_keys = MapSet.new()
+      random_keys = fill_map(random_keys, numRequests, max)
+      random_keys = Enum.shuffle(random_keys)
 
-    sum =
-      Enum.reduce(node_set, 0, fn node, acc ->
-        random_keys = MapSet.new()
-        random_keys = fill_map(random_keys, numRequests, max)
-        random_keys = Enum.shuffle(random_keys)
-        # IO.inspect([node, random_keys])
-
-        sum1 =
-          Enum.reduce(random_keys, 0, fn key, acc1 ->
-            {succ, hops} = GenServer.call(:"node_#{node}", {:find_successor_lookup, {key, 0}})
-
-            succ =
-              if(succ == @max) do
-                GenServer.call(:"node_#{@max}", :get_successor)
-              else
-                succ
-              end
-
-            # IO.inspect([succ, hops])
-            acc1 + hops
-          end)
-
-        acc + sum1
+      Enum.each(random_keys, fn key ->
+        [{_, req_count}] = :ets.lookup(:chord, "req_count")
+        req_count = req_count + 1
+        :ets.insert(:chord, {"req_count", req_count})
+        GenServer.cast(:"node_#{node}", {:find_successor_lookup, {key, 0}})
+        Process.sleep(1)
       end)
+    end)
 
-    IO.inspect(["avg number of hops = ", sum / (numNodes * numRequests)])
-    IO.inspect(["log2(#{numNodes-count}) = ", :math.log2(numNodes-count)])
-    IO.inspect(["log10(#{numNodes-count}) = ", :math.log10(numNodes-count)])
+    decider3(numNodes, Enum.count(node_set), numRequests)
+  end
 
-    System.halt(0)
+  defp decider3(numNodes, count, numRequests) do
+    [{_, req_count}] = :ets.lookup(:chord, "req_count")
+
+    if(req_count == 0) do
+      [{_, sum}] = :ets.lookup(:chord, "hops_count")
+      IO.puts "After Failure"
+      IO.inspect(["avg number of hops = ", sum / (numNodes * numRequests)])
+      IO.inspect(["log2(#{count}) = ", :math.log2(count)])
+      IO.inspect(["log10(#{count}) = ", :math.log10(count)])
+      System.halt(0)
+    else
+      decider3(numNodes, count, numRequests)
+    end
   end
 
   defp fill_map(node_set, numNodes, max) do

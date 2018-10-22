@@ -1,6 +1,6 @@
 args = System.argv()
 numNodes = String.to_integer(Enum.at(args, 0))
 numRequests = String.to_integer(Enum.at(args, 1))
+percentage = String.to_integer(Enum.at(args, 2))
 
-#start_time = System.monotonic_time(:millisecond)
-Chord.Application.start(:normal,{numNodes,numRequests})
+Chord.Application.start(:normal,{numNodes,numRequests, percentage})
