@@ -39,7 +39,6 @@
 │   │       └── stabilize.ex
 │   ├── main.exs
 │   ├── mix.exs
-│   ├── README.md
 │   └── test/
 ├── chord-bonus
 │   ├── _build/
@@ -51,12 +50,16 @@
 │   │       ├── node.ex
 │   │       ├── node_supervisor.ex
 │   │       └── stabilize.ex
+│   ├── main.exs
 │   ├── mix.exs
-│   ├── README.md
 │   └── test/
+├── images
+│   └── Average Hops vs Numnodes.png
 ├── Proj3.pdf
 ├── Project 3 Bonus Report.docx
-└── Project 3 Bonus Report.pdf
+├── Project 3 Bonus Report.pdf
+└── README.md
+
 ```
 
 ## Defining Application architecture
