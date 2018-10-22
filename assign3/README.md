@@ -101,7 +101,7 @@ $ mix run --no-halt main.exs 100 5 20
 Example output for chord:
 
 ```
-["avg number of hops = ", 3.92]
+["avg number of hops = ", 3.642]
 ["log2(100) = ", 6.643856189774724]
 ["log10(100) = ", 2.0]
 ```
@@ -113,10 +113,11 @@ Log of numNodes base 10
 Example output for gvp-bonus:
 
 ```
-["avg number of hops = ", 3.734]
+["avg number of hops = ", 3.912]
 ["log2(100) = ", 6.643856189774724]
 ["log10(100) = ", 2.0]
-["avg number of hops = ", 4.05]
+After Failure
+["avg number of hops = ", 3.254]
 ["log2(80) = ", 6.321928094887363]
 ["log10(80) = ", 1.9030899869919435]
 ```
@@ -124,6 +125,7 @@ Example output for gvp-bonus:
 Average number of hops.
 Log of numNodes base 2
 Log of numNodes base 10
+After Failure
 Average number of hops after deletion.
 Log of {numNodes after deletion} base 2
 Log of (numNodes after deletion} base 10
