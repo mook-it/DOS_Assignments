@@ -106,7 +106,9 @@ Example output for chord:
 ```
 
 Average number of hops.
+
 Log of numNodes base 2
+
 Log of numNodes base 10
 
 Example output for chord-bonus:
@@ -121,12 +123,18 @@ After Failure
 ["log10(80) = ", 1.9030899869919435]
 ```
 
-Average number of hops.
+Average number of hops
+
 Log of numNodes base 2
+
 Log of numNodes base 10
+
 After Failure
-Average number of hops after deletion.
+
+Average number of hops after deletion
+
 Log of {numNodes after deletion} base 2
+
 Log of (numNodes after deletion} base 10
 
 ## Implementation:
@@ -140,7 +148,6 @@ Log of (numNodes after deletion} base 10
 - Whenever a node N1 joins, it asks a node N2 for its place in on the ring. N2 runs find_successor module to find the successor S1 of N1 in the chord ring. N1 calls notify module to let its successor S1 know about its presence and this is how the predecessor and successor states of node N1 and S1 gets updated.
 - The concurrent modules of stabilize and fix_finger runs periodically on all nodes. They update the predecessor and finger stable states of all the nodes respectively.
 - Lookup of any key on any node uses the finger table to optimize the run time complexity of the protocol. They use the module find*successor and find_closest* preceding modules to perform lookups
--
 
 ## Modules:
 
