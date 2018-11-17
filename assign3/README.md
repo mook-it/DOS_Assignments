@@ -23,9 +23,6 @@
 
 ## Project Directory Structure
 
-- We are submitting two folders: gvp, gvp-bonus, where gvp stands for gossip vs pushsum. gvp-bonus contains code for the bonus part including node termination handling.
-- Following is the directory structure for gvp. gvp-bonus follows similar directory structure.
-
 ```
 ├── chord
 │   ├── _build/
@@ -59,7 +56,6 @@
 ├── Project 3 Bonus Report.docx
 ├── Project 3 Bonus Report.pdf
 └── README.md
-
 ```
 
 ## Defining Application architecture
@@ -113,7 +109,7 @@ Average number of hops.
 Log of numNodes base 2
 Log of numNodes base 10
 
-Example output for gvp-bonus:
+Example output for chord-bonus:
 
 ```
 ["avg number of hops = ", 3.912]

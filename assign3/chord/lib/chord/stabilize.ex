@@ -27,12 +27,12 @@ defmodule Chord.Stabilize do
 
     Enum.each(added_nodes, fn x ->
       GenServer.cast(x, :stabilize)
-      Process.sleep(1)
+      Process.sleep(10)
     end)
 
     Enum.each(added_nodes, fn x ->
       GenServer.cast(x, :fix_fingers)
-      Process.sleep(1)
+      Process.sleep(10)
     end)
 
     GenServer.cast(@me, :stabilize)

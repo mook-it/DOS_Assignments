@@ -122,7 +122,7 @@ defmodule Chord.Driver do
     node_set = node_set -- deleted_nodes
 
     :ets.insert(:chord, {"failed_nodes", deleted_nodes})
-    Process.sleep(1000)
+    # Process.sleep(1000)
 
     Enum.each(node_set, fn node ->
       random_keys = MapSet.new()
